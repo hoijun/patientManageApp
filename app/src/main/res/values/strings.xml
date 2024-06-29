@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">patientManageApp</string>
+    <string name="home">Home</string>
+    <string name="calendar">Calendar</string>
+    <string name="analysis">Analysis</string>
+    <string name="mypage">MyPage</string>
+    <string name="setting">Setting</string>
+    <string name="title_activity_web_cam">WebCamActivity</string>
+
+</resources>
