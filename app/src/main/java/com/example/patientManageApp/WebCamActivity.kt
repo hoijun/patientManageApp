@@ -14,7 +14,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -31,7 +35,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -113,20 +119,30 @@ fun WebCamScreen() {
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Column (modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.End
-        ) {
-            Text(modifier = Modifier.rotate(90f),
-                text = "1번 카메라",
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp
+        IconButton(onClick = { /*TODO*/ }) {
+            Icon(
+                painter = painterResource(id = R.drawable.arrow_left),
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.padding(top = 40.dp)
             )
         }
 
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 40.dp)
+                .wrapContentWidth(Alignment.CenterHorizontally),
+            text = "1번 카메라",
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            fontSize = 20.sp,
+            textAlign = TextAlign.Center
+        )
+
         imageBitmap?.let { bitmap ->
-            Image(bitmap = bitmap.asImageBitmap(),
+            Image(
+                bitmap = bitmap.asImageBitmap(),
                 contentDescription = "Video Stream",
                 modifier = Modifier.fillMaxSize()
             )

@@ -1,7 +1,10 @@
 package com.example.patientManageApp
 
+import android.annotation.SuppressLint
 import android.content.Intent
+import android.icu.util.LocaleData
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -27,9 +30,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,7 +46,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,11 +55,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.patientManageApp.Calendar.Companion.DaysOfWeekTitle
 import com.example.patientManageApp.ui.theme.PatientManageAppTheme
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.OutDateStyle
 import com.kizitonwose.calendar.core.daysOfWeek
+import com.kizitonwose.calendar.core.nextMonth
+import com.kizitonwose.calendar.core.previousMonth
+import com.kizitonwose.calendar.core.yearMonth
+import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -78,7 +88,7 @@ fun MyApp() {
     }
     ) {
         Box(modifier = Modifier.padding(it)) {
-            MyNavHost(navController = navController, startDestination = AppScreen.Calendar.route)
+            MyNavHost(navController = navController, startDestination = AppScreen.Home.route)
         }
     }
 }
@@ -248,13 +258,16 @@ fun HomeScreen() {
     }
 }
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun CalendarScreen() {
-    val currentMonth = remember { YearMonth.now() }
-    val startMonth = remember { currentMonth.minusMonths(100) } // Adjust as needed
-    val endMonth = remember { currentMonth.plusMonths(0) } // Adjust as needed
+    val currentMonth = YearMonth.now()
+    val startMonth = currentMonth.minusMonths(100) // Adjust as needed
+    val endMonth = currentMonth.plusMonths(0)// Adjust as needed
     val daysOfWeek = daysOfWeek(firstDayOfWeek = DayOfWeek.SUNDAY)
-    var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
+    val selectedDate = mutableStateOf<LocalDate?>(LocalDate.now())
+
+    val coroutineScope = rememberCoroutineScope()
 
     val state = rememberCalendarState(
         startMonth = startMonth,
@@ -264,31 +277,34 @@ fun CalendarScreen() {
         outDateStyle = OutDateStyle.EndOfGrid
     )
 
-    HorizontalCalendar(
-        modifier = Modifier.padding(15.dp),
-        state = state,
-        dayContent = { day1 ->
-            Calendar.Day(day1, isSelected = selectedDate == day1.date) { day2 ->
-                if (selectedDate != day2.date) {
-                    selectedDate = if (selectedDate == day2.date) null else day2.date
+    if (state.firstVisibleMonth.yearMonth.toString() != LocalDate.now().yearMonth.toString()) {
+        selectedDate.value = state.firstVisibleMonth.yearMonth.atDay(1)
+    }
+
+    Column {
+        Calendar.MonthHeader(state.firstVisibleMonth,
+            onLeftClick = { coroutineScope.launch { state.scrollToMonth(state.firstVisibleMonth.yearMonth.previousMonth) }},
+            onRightClick = { coroutineScope.launch { state.scrollToMonth(state.firstVisibleMonth.yearMonth.nextMonth) }}
+        )
+
+        HorizontalCalendar(
+            modifier = Modifier.padding(horizontal = 15.dp, vertical = 10.dp),
+            state = state,
+            dayContent = { day1 ->
+                Calendar.Day(day1, isSelected = selectedDate.value == day1.date) { day2 ->
+                    if (selectedDate.value != day2.date) {
+                        selectedDate.value = if (selectedDate.value == day2.date) null else day2.date
+                    }
                 }
+            },
+            monthHeader = {
+                DaysOfWeekTitle(
+                    modifier = Modifier.padding(vertical = 10.dp),
+                    daysOfWeek = daysOfWeek
+                )
             }
-        },
-        monthHeader = { month ->
-            val monthText = month.yearMonth.month.value
-            Text(
-                modifier = Modifier.padding(vertical = 15.dp).fillMaxWidth(),
-                text = "${month.yearMonth.year}년 ${monthText}월",
-                textAlign = TextAlign.Center,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Calendar.DaysOfWeekTitle(
-                modifier = Modifier.padding(vertical = 10.dp),
-                daysOfWeek = daysOfWeek
-            )
-        }
-    )
+        )
+    }
 }
 
 @Composable
@@ -300,8 +316,6 @@ fun AnalysisScreen() {
 fun MyPageScreen() {
     Text(text = "MyPage")
 }
-
-
 
 @Preview(showBackground = true)
 @Composable
