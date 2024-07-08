@@ -1,26 +1,27 @@
 package com.example.patientManageApp
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.view.TextureView
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
+import androidx.annotation.OptIn
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -34,136 +35,170 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.rtsp.RtspMediaSource
+import androidx.media3.ui.AspectRatioFrameLayout
+import androidx.media3.ui.PlayerView
 import com.example.patientManageApp.ui.theme.PatientManageAppTheme
-import io.socket.client.IO
-import io.socket.client.Socket
-import io.socket.engineio.client.transports.WebSocket
-import io.socket.engineio.parser.Base64
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.json.JSONObject
+
+enum class PlayerState {
+    INITIALIZING, BUFFERING, READY, ERROR, ENDED
+}
 
 class WebCamActivity : ComponentActivity() {
+
+    private val onBackPressed = {
+        window.insetsController?.show(WindowInsets.Type.statusBars())
+        window.insetsController?.show(WindowInsets.Type.navigationBars())
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        window.insetsController?.hide(WindowInsets.Type.statusBars())
+        window.insetsController?.hide(WindowInsets.Type.navigationBars())
+        window.insetsController?.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         setContent {
             PatientManageAppTheme {
-                WebCamScreen()
+                WebCamScreen("rtsp://admin:admin@58.236.195.147:1936", onBackPressed)
             }
         }
     }
 }
 
+@OptIn(UnstableApi::class)
 @Composable
-fun WebCamScreen() {
-    Surface(modifier = Modifier.fillMaxSize(), color = Color.Black) { }
-    var socket by remember { mutableStateOf<Socket?>(null) }
-    var imageBitmap by remember { mutableStateOf<Bitmap?>(null) }
+fun WebCamScreen(rtspUrl: String, onBackPressed: () -> Unit) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    var playerState by remember { mutableStateOf(PlayerState.INITIALIZING) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) {
-        try {
-            val opts = IO.Options()
-            opts.transports = arrayOf(WebSocket.NAME)
-            socket = IO.socket("http://192.168.35.77:5001", opts) // 서버의 IP 주소로 변경
-            socket?.connect()
-        } catch (e: Exception) {
-            errorMessage = "소켓 연결 실패: ${e.message}"
-        }
-    }
+    val exoPlayer = remember { ExoPlayer.Builder(context).build().apply {
+        volume = 0f
+        addListener(object : Player.Listener {
+            override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                playerState = PlayerState.ERROR
+                errorMessage = "플레이어 오류: ${error.message}"
+            }
 
-    LaunchedEffect(socket) {
-        socket?.on("frame") { args ->
-            try {
-                val data = args[0] as JSONObject
-                val imageStr = data.getString("image")
-                coroutineScope.launch(Dispatchers.Default) {
-                    val imageBytes = Base64.decode(imageStr, Base64.DEFAULT)
-                    val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                    imageBitmap = bitmap
+            override fun onPlaybackStateChanged(state: Int) {
+                when (state) {
+                    Player.STATE_READY -> playerState = PlayerState.READY
+                    Player.STATE_BUFFERING -> playerState = PlayerState.BUFFERING
+                    Player.STATE_ENDED -> playerState = PlayerState.ENDED
+                    Player.STATE_IDLE -> { }
                 }
-            } catch (e: Exception) {
-                errorMessage = "이미지 처리 실패: ${e.message}"
             }
-        }
+        })
+    } }
 
-        socket?.on(Socket.EVENT_CONNECT) {
-            coroutineScope.launch {
-                errorMessage = null
-                println("연결 성공")
-            }
-        }
-
-        socket?.on(Socket.EVENT_CONNECT_ERROR) { args ->
-            coroutineScope.launch {
-                errorMessage = "연결 오류 발생: ${args[0]}"
-                println("연결 오류: ${args[0]}")
-            }
-        }
-
-        socket?.on(Socket.EVENT_DISCONNECT) {
-            coroutineScope.launch {
-                errorMessage = "서버 연결 끊김"
-                println("서버 연결 끊김")
-            }
-        }
+    val mediaSource = remember {
+        RtspMediaSource.Factory()
+            .setForceUseRtpTcp(true)
+            .setDebugLoggingEnabled(true)
+            .createMediaSource(MediaItem.fromUri(Uri.parse(rtspUrl)))
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        IconButton(onClick = { /*TODO*/ }) {
-            Icon(
-                painter = painterResource(id = R.drawable.arrow_left),
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.padding(top = 40.dp)
-            )
-        }
+    LaunchedEffect(mediaSource) {
+        playerState = PlayerState.INITIALIZING
+        exoPlayer.setMediaSource(mediaSource)
+        exoPlayer.prepare()
+        exoPlayer.playWhenReady = true
 
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 40.dp)
-                .wrapContentWidth(Alignment.CenterHorizontally),
-            text = "1번 카메라",
-            color = Color.White,
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp,
-            textAlign = TextAlign.Center
-        )
-
-        imageBitmap?.let { bitmap ->
-            Image(
-                bitmap = bitmap.asImageBitmap(),
-                contentDescription = "Video Stream",
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-
-        errorMessage?.let { error ->
-            androidx.compose.material.Text(
-                text = error,
-                color = Color.Red,
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .background(Color.White)
-                    .padding(16.dp)
-            )
+        scope.launch {
+            delay(10000)
+            if (playerState == PlayerState.INITIALIZING) {
+                playerState = PlayerState.ERROR
+                errorMessage = "연결 시간 초과. 네트워크를 확인해 주세요."
+            }
         }
     }
 
     DisposableEffect(Unit) {
         onDispose {
-            socket?.disconnect()
+            exoPlayer.release()
         }
+    }
+
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(Color.Black)) {
+        when (playerState) {
+            PlayerState.INITIALIZING, PlayerState.BUFFERING -> {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+
+            PlayerState.READY -> {
+                AndroidView(
+                    factory = { ctx ->
+                        PlayerView(ctx).apply {
+                            player = exoPlayer
+                            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
+                            useController = false
+                            rotation = 180f
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
+            PlayerState.ERROR -> {
+                Column(
+                    modifier = Modifier.align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("오류 발생")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(errorMessage ?: "알 수 없는 오류")
+                }
+            }
+
+            PlayerState.ENDED -> {
+                Text("재생 종료", modifier = Modifier.align(Alignment.Center))
+            }
+        }
+        IconButton(
+            onClick = onBackPressed,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(bottom = 10.dp, end = 10.dp)
+                .rotate(180f)
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "뒤로 가기",
+                tint = Color.White
+            )
+        }
+
+        // "1번 카메라" 텍스트
+        Text(
+            text = "1번 카메라",
+            color = Color.White,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 20.dp)
+                .rotate(180f)
+        )
     }
 }
 
@@ -171,6 +206,5 @@ fun WebCamScreen() {
 @Composable
 fun WebCamScreenPreview() {
     PatientManageAppTheme {
-        WebCamScreen()
     }
 }

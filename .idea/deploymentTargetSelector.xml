@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="OnboardingPreview">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-06-29T17:05:39.376525300Z">
+        <DropdownSelection timestamp="2024-07-07T20:07:41.933408300Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\hoijun\.android\avd\Pixel_7_Pro_API_34.avd" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=R3CW207JASX" />
             </handle>
           </Target>
         </DropdownSelection>

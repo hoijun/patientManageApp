@@ -73,4 +73,14 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.composeCalender)
     implementation(libs.socket.io.client)
+
+    implementation(libs.androidx.media3.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
+    implementation(libs.androidx.media3.exoplayer.rtsp)
+
+    implementation(libs.compose)
+    implementation(libs.compose.m2)
+    implementation(libs.compose.m3)
+    implementation(libs.core)
+    implementation(libs.views)
 }
