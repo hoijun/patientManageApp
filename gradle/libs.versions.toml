@@ -8,6 +8,7 @@ composeM2 = "1.15.0"
 composeM3 = "1.15.0"
 composeVersion = "1.15.0"
 core = "1.15.0"
+firebaseBom = "33.1.1"
 kotlin = "1.9.0"
 coreKtx = "1.13.1"
 junit = "4.13.2"
@@ -42,6 +43,8 @@ compose-m2 = { module = "com.patrykandpatrick.vico:compose-m2", version.ref = "c
 compose-m3 = { module = "com.patrykandpatrick.vico:compose-m3", version.ref = "composeM3" }
 composeCalender = { module = "com.kizitonwose.calendar:compose", version.ref = "compose" }
 core = { module = "com.patrykandpatrick.vico:core", version.ref = "core" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version = "1.2.1" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

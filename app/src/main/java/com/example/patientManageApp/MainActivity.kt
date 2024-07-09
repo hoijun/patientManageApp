@@ -33,7 +33,7 @@ import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material.Text
