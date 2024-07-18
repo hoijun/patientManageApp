@@ -1,10 +1,16 @@
 <resources>
     <string name="app_name">patientManageApp</string>
+    <string name="login">Login</string>
     <string name="home">Home</string>
+    <string name="settingCamera">SettingCamera</string>
     <string name="calendar">Calendar</string>
+    <string name="detail_CalendarInfo">DetailCalendarInfo</string>
     <string name="analysis">Analysis</string>
-    <string name="mypage">MyPage</string>
-    <string name="setting">Setting</string>
+    <string name="myPage">MyPage</string>
+    <string name="userProfile">UserProfile</string>
+    <string name="patientProfile">PatientProfile</string>
     <string name="title_activity_web_cam">WebCamActivity</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_splash">SplashActivity</string>
 
 </resources>

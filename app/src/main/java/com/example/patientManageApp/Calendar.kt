@@ -3,6 +3,7 @@ package com.example.patientManageApp
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -18,8 +19,10 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -29,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.patientManageApp.Constant.Companion.noRippleClickable
 import com.kizitonwose.calendar.core.CalendarDay
 import com.kizitonwose.calendar.core.CalendarMonth
 import com.kizitonwose.calendar.core.DayPosition
@@ -47,15 +51,20 @@ class Calendar {
                 modifier = Modifier
                     .aspectRatio(1f)
                     .padding(3.dp)
-                    .border(if(isSelected) 2.dp else 0.dp
-                        ,if(isSelected) Color.Gray else Color.Transparent, RoundedCornerShape(7.5.dp))
-                    .clickable(enabled = day.position == DayPosition.MonthDate,
-                        onClick = { onClick(day) }
-                    ),
+                    .border(
+                        if (isSelected) 2.dp else 0.dp,
+                        if (isSelected) Color.Gray else Color.Transparent,
+                        RoundedCornerShape(7.5.dp)
+                    )
+                    .noRippleClickable(enabled = day.position == DayPosition.MonthDate) {
+                        onClick(day)
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    modifier = Modifier.padding(top = 4.5.dp).align(Alignment.TopCenter),
+                    modifier = Modifier
+                        .padding(top = 4.5.dp)
+                        .align(Alignment.TopCenter),
                     text = day.date.dayOfMonth.toString(),
                     color = if (day.position == DayPosition.MonthDate) {
                         when (day.date.dayOfWeek) {
@@ -67,7 +76,9 @@ class Calendar {
                     fontSize = 11.sp
                 )
 
-                Canvas(modifier = Modifier.fillMaxWidth().align(Alignment.Center)) {
+                Canvas(modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.Center)) {
                     val path = Path().apply {
                         moveTo(15f, 0f)
                         lineTo(size.width - 15f, 0f)
@@ -102,33 +113,55 @@ class Calendar {
         }
 
         @Composable
-        fun MonthHeader(month: CalendarMonth, onLeftClick: () -> Unit, onRightClick: () -> Unit) {
+        fun MonthHeader(month: YearMonth, onLeftClick: () -> Unit, onRightClick: () -> Unit) {
             val minMonth = YearMonth.of(2023, 1)
             val maxMonth = LocalDate.now().yearMonth
-            Row(modifier = Modifier.fillMaxWidth()
+            Row(modifier = Modifier
+                .fillMaxWidth()
                 .height(intrinsicSize = IntrinsicSize.Min)
                 .padding(start = 15.dp, end = 15.dp, top = 10.dp, bottom = 5.dp),
                 horizontalArrangement = Arrangement.SpaceBetween) {
-                IconButton(onClick = onLeftClick,
-                    enabled = month.yearMonth > minMonth) {
-                    Icon(painter = painterResource(id = R.drawable.arrow_left),
-                        contentDescription = null)
-                }
+                Icon(
+                    painter = painterResource(id = R.drawable.arrow_left),
+                    contentDescription = null,
+                    modifier = Modifier.noRippleClickable(enabled = month > minMonth) {
+                        onLeftClick()
+                    },
+                    tint = if (month > minMonth) Color.Black else Color.LightGray
+                )
                 Text(
-                    modifier = Modifier.fillMaxHeight()
+                    modifier = Modifier
+                        .fillMaxHeight()
                         .wrapContentHeight(align = Alignment.CenterVertically),
-                    text = "${month.yearMonth.year}년 ${month.yearMonth.month.value}월",
+                    text = "${month.year}년 ${month.month.value}월",
                     textAlign = TextAlign.Center,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
 
-                IconButton(onClick = onRightClick,
-                    enabled = month.yearMonth < maxMonth) {
-                    Icon(painter = painterResource(id = R.drawable.arrow_right),
-                        contentDescription = null)
-                }
+                Icon(
+                    painter = painterResource(id = R.drawable.arrow_right),
+                    contentDescription = null,
+                    modifier = Modifier.noRippleClickable(enabled = month < maxMonth) {
+                        onRightClick()
+                    },
+                    tint = if (month < maxMonth) Color.Black else Color.LightGray
+                )
             }
         }
+    }
+
+    @Composable
+    fun Modifier.noRippleClickable(
+        enabled: Boolean = true,
+        onClick: () -> Unit
+    ) = this.clickable(
+        enabled = enabled,
+        indication = null,
+        interactionSource = remember {
+            MutableInteractionSource()
+        }
+    ) {
+        onClick()
     }
 }
