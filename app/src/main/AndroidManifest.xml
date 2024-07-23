@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name=".GlobalApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -17,15 +18,8 @@
         android:theme="@style/Theme.patientManageApp">
         <activity
             android:name=".SplashActivity"
-            android:exported="false"
-            android:label="@string/title_activity_splash"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.patientManageApp" />
-
-        <activity
-            android:name=".LoginActivity"
             android:exported="true"
-            android:label="@string/title_activity_login"
+            android:label="@string/title_activity_splash"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.patientManageApp">
             <intent-filter>
@@ -33,6 +27,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true"
+            android:label="@string/title_activity_login"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.patientManageApp"/>
 
         <activity
             android:name=".WebCamActivity"
@@ -46,6 +48,25 @@
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.patientManageApp"/>
+
+        <meta-data
+            android:name="com.kakao.sdk.AppKey"
+            android:value="Kakao_API_KEY" />
+
+        <activity
+            android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- Redirect URI: "kakao${NATIVE_APP_KEY}://oauth" -->
+                <data android:host="oauth"
+                    android:scheme="${Kakao_Redirect_URI}" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

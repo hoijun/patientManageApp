@@ -1,4 +1,4 @@
-package com.example.patientManageApp.ui.theme
+package com.example.patientManageApp.presenter.theme
 
 import androidx.compose.ui.graphics.Color
 

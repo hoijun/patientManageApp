@@ -12,5 +12,4 @@
     <string name="title_activity_web_cam">WebCamActivity</string>
     <string name="title_activity_login">LoginActivity</string>
     <string name="title_activity_splash">SplashActivity</string>
-
 </resources>

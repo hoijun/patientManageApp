@@ -1,7 +1,8 @@
-package com.example.patientManageApp
+package com.example.patientManageApp.presenter
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import com.example.patientManageApp.R
 
 sealed class AppScreen(
     val route: String,

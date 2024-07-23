@@ -1,6 +1,5 @@
 [versions]
-accompanistSystemuicontroller = "0.30.1"
-agp = "8.3.0"
+agp = "8.3.2"
 androidxMedia3Exoplayer = "1.3.1"
 appcompat = "1.7.0"
 compose = "2.5.2"
@@ -8,29 +7,38 @@ composeM2 = "1.15.0"
 composeM3 = "1.15.0"
 composeVersion = "1.15.0"
 core = "1.15.0"
-firebaseBom = "33.1.1"
+firebaseAuth = "23.0.0"
+firebaseBom = "33.1.2"
+hiltAndroid = "2.48"
+hiltAndroidCompiler = "2.48"
+hiltNavigationCompose = "1.0.0"
 kotlin = "1.9.0"
 coreKtx = "1.13.1"
 junit = "4.13.2"
-junitVersion = "1.1.5"
-espressoCore = "3.5.1"
-kotlinxCoroutinesCore = "1.8.0-RC"
-lifecycleRuntimeKtx = "2.8.2"
+espressoCore = "3.6.1"
+lifecycleRuntimeKtx = "2.8.3"
 activityCompose = "1.9.0"
-composeBom = "2023.08.00"
+composeBom = "2024.06.00"
+lifecycleViewmodelKtxVersion = "2.8.3"
 material = "1.6.8"
 media3ExoplayerRtsp = "1.3.1"
 media3Ui = "1.3.1"
 navigationCompose = "2.7.7"
+oauthJdk8 = "5.9.1"
+orbitCompose = "9.0.0"
+orbitCore = "9.0.0"
+orbitTest = "9.0.0"
+orbitViewmodel = "9.0.0"
+playServicesAuth = "21.2.0"
 runtimeLivedata = "1.6.8"
-socketIoClient = "2.0.0"
-media3Common = "1.3.1"
+v2User = "2.20.3"
 views = "1.15.0"
 
 [libraries]
-accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistSystemuicontroller" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtxVersion" }
 androidx-material = { module = "androidx.compose.material:material", version.ref = "material" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 androidx-media3-exoplayer-rtsp = { module = "androidx.media3:media3-exoplayer-rtsp", version.ref = "media3ExoplayerRtsp" }
@@ -44,7 +52,10 @@ compose-m3 = { module = "com.patrykandpatrick.vico:compose-m3", version.ref = "c
 composeCalender = { module = "com.kizitonwose.calendar:compose", version.ref = "compose" }
 core = { module = "com.patrykandpatrick.vico:core", version.ref = "core" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-auth = { module = "com.google.firebase:firebase-auth", version.ref = "firebaseAuth" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
+hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version = "1.2.1" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -59,8 +70,10 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.8.1" }
+naver-oauth-jdk8 = { module = "com.navercorp.nid:oauth-jdk8", version.ref = "oauthJdk8" }
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 socket-io-client = { module = "io.socket:socket.io-client", version = "2.1.0" }
-androidx-media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "media3Common" }
+kakao-v2-user = { module = "com.kakao.sdk:v2-user", version.ref = "v2User" }
 views = { module = "com.patrykandpatrick.vico:views", version.ref = "views" }
 
 [plugins]
