@@ -118,7 +118,7 @@ class LoginViewModel @Inject constructor() : ViewModel() {
     }
 
     fun loginFail() {
-        _loginUiState.value = LoginUiState.LoginFail
+        _loginUiState.value = LoginUiState.LoginError
     }
 
     fun isLoading() {

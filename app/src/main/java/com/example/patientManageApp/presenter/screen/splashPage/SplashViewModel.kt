@@ -14,11 +14,15 @@ class SplashViewModel @Inject constructor() : ViewModel() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
     fun checkLoginState() {
-        val currentUser = auth.currentUser
-        if (currentUser != null) {
-            autoLogin()
-        } else {
-            notAutoLogin()
+        try {
+            val currentUser = auth.currentUser
+            if (currentUser != null) {
+                autoLogin()
+            } else {
+                notAutoLogin()
+            }
+        } catch (e: Exception) {
+            isError()
         }
     }
 
@@ -28,5 +32,9 @@ class SplashViewModel @Inject constructor() : ViewModel() {
 
     private fun notAutoLogin() {
         _splashUiState.value = SplashUiState.NotAutoLogin
+    }
+
+    private fun isError() {
+        _splashUiState.value = SplashUiState.Error
     }
 }

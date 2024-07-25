@@ -65,7 +65,7 @@ import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "CoroutineCreationDuringComposition")
 @Composable
-fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), movePage: () -> Unit, ) {
+fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), movePage: () -> Unit) {
     val context = LocalContext.current
     val snackBarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
@@ -86,7 +86,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), movePage: () -> Uni
             context.startActivity(intent)
         }
 
-        LoginUiState.LoginFail -> {
+        LoginUiState.LoginError -> {
             Scaffold(
                 modifier = Modifier.fillMaxSize(),
                 snackbarHost = { SnackbarHost(hostState = snackBarHostState)}
@@ -304,12 +304,4 @@ private fun googleLogin(
 
     val googleSignInClient = GoogleSignIn.getClient(context, googleSignInOptions)
     launcher.launch(googleSignInClient.signInIntent)
-}
-
-private fun saveUser(context: Context, id: String, password: String) {
-    val loginInfo = context.getSharedPreferences("setting", MODE_PRIVATE)
-    val editor = loginInfo.edit()
-    editor.putString("id",id)
-    editor.putString("password",password)
-    editor.apply()
 }

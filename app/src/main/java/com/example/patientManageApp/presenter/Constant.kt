@@ -284,7 +284,7 @@ fun DateBottomSheet(modifier: Modifier, closeSheet: (birth: String) -> Unit) {
             horizontalArrangement = Arrangement.SpaceAround,
             modifier = modifier
                 .fillMaxWidth()
-                .padding(vertical = 20.dp, horizontal = 10.dp)
+                .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 40.dp)
         ) {
             WheelDatePicker(
                 width = 100.dp,
