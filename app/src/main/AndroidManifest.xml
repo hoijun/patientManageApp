@@ -17,9 +17,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.patientManageApp">
         <activity
-            android:name=".SplashActivity"
+            android:name=".presentation.SplashActivity"
             android:exported="true"
             android:label="@string/title_activity_splash"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.patientManageApp">
+        </activity>
+
+
+        <activity
+            android:name=".presentation.LoginActivity"
+            android:exported="true"
+            android:label="@string/title_activity_login"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.patientManageApp">
             <intent-filter>
@@ -28,23 +37,15 @@
             </intent-filter>
         </activity>
 
-
         <activity
-            android:name=".LoginActivity"
-            android:exported="true"
-            android:label="@string/title_activity_login"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.patientManageApp"/>
-
-        <activity
-            android:name=".WebCamActivity"
+            android:name=".presentation.WebCamActivity"
             android:exported="false"
             android:label="@string/title_activity_web_cam"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.patientManageApp" />
 
         <activity
-            android:name=".MainActivity"
+            android:name=".presentation.MainActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.patientManageApp"/>
