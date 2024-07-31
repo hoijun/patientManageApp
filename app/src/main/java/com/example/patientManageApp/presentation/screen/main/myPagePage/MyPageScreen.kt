@@ -1,4 +1,4 @@
-package com.example.patientManageApp.presentation.screen.myPagePage
+package com.example.patientManageApp.presentation.screen.main.myPagePage
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement

@@ -1,4 +1,4 @@
-package com.example.patientManageApp.presentation.screen.analysisPage
+package com.example.patientManageApp.presentation.screen.main.analysisPage
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Column
@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.sp
 import com.example.patientManageApp.presentation.BackOnPressed
 import com.example.patientManageApp.R
 import com.example.patientManageApp.presentation.ScreenHeader
-import com.example.patientManageApp.presentation.screen.calendarPage.MonthHeader
+import com.example.patientManageApp.presentation.screen.main.calendarPage.MonthHeader
 import com.kizitonwose.calendar.core.nextMonth
 import com.kizitonwose.calendar.core.previousMonth
 import com.kizitonwose.calendar.core.yearMonth
@@ -62,52 +62,7 @@ fun AnalysisScreen() {
             onLeftClick = { currentMonth = currentMonth.previousMonth },
             onRightClick = { currentMonth = currentMonth.nextMonth })
 
-        Chart(
-            modifier = Modifier
-                .padding(horizontal = 20.dp, vertical = 5.dp)
-                .fillMaxHeight(0.5f),
-            chart = columnChart(
-                columns = listOf(
-                    lineComponent(
-                        color = Color.Gray,
-                        thickness = 10.dp,
-                        shape = Shapes.roundedCornerShape(topLeftPercent = 30, topRightPercent = 30)
-                    )
-                ),
-                dataLabel = TextComponent.Builder().build().apply {
-                    margins.set(2f)
-                    color = Color.Black.toArgb()
-                },
-                axisValuesOverrider = AxisValuesOverrider.fixed(minY = 0f, maxY = 15f)
-            ),
-            chartModelProducer = ChartEntryModelProducer(
-                listOf(
-                    entryOf(x = 0f, y = 4f),
-                    entryOf(x = 1f, y = 5f),
-                    entryOf(x = 2f, y = 9f),
-                    entryOf(x = 3f, y = 4f)
-                )
-            ),
-            startAxis = rememberStartAxis(
-                itemPlacer = AxisItemPlacer.Vertical.default(maxItemCount = 4)
-            ),
-            endAxis = rememberEndAxis(
-                itemPlacer = AxisItemPlacer.Vertical.default(maxItemCount = 4)
-            ),
-            topAxis = rememberTopAxis(
-                valueFormatter = { value, _ ->
-                    val xAxisLabelData = listOf("1주", "2주", "3주", "4주")
-                    (xAxisLabelData[value.toInt()])
-                }
-            ),
-            bottomAxis = rememberBottomAxis(
-                valueFormatter = { value, _ ->
-                    val xAxisLabelData = listOf("1주", "2주", "3주", "4주")
-                    (xAxisLabelData[value.toInt()])
-                }
-            ),
-            runInitialAnimation = false
-        )
+        AnalysisChart()
 
         Row(modifier = Modifier.padding(start = 45.dp)) {
             Row(
@@ -148,6 +103,56 @@ fun AnalysisScreen() {
         SetAnalysisScreenInfo(R.drawable.warning, "이번 달 이상 행동 횟수", "22회")
         SetAnalysisScreenInfo(R.drawable.arrow_up, "지난달 대비 증가 횟수", "4회")
     }
+}
+
+@Composable
+private fun AnalysisChart() {
+    Chart(
+        modifier = Modifier
+            .padding(horizontal = 20.dp, vertical = 5.dp)
+            .fillMaxHeight(0.5f),
+        chart = columnChart(
+            columns = listOf(
+                lineComponent(
+                    color = Color.Gray,
+                    thickness = 10.dp,
+                    shape = Shapes.roundedCornerShape(topLeftPercent = 30, topRightPercent = 30)
+                )
+            ),
+            dataLabel = TextComponent.Builder().build().apply {
+                margins.set(2f)
+                color = Color.Black.toArgb()
+            },
+            axisValuesOverrider = AxisValuesOverrider.fixed(minY = 0f, maxY = 15f)
+        ),
+        chartModelProducer = ChartEntryModelProducer(
+            listOf(
+                entryOf(x = 0f, y = 4f),
+                entryOf(x = 1f, y = 5f),
+                entryOf(x = 2f, y = 9f),
+                entryOf(x = 3f, y = 4f)
+            )
+        ),
+        startAxis = rememberStartAxis(
+            itemPlacer = AxisItemPlacer.Vertical.default(maxItemCount = 4)
+        ),
+        endAxis = rememberEndAxis(
+            itemPlacer = AxisItemPlacer.Vertical.default(maxItemCount = 4)
+        ),
+        topAxis = rememberTopAxis(
+            valueFormatter = { value, _ ->
+                val xAxisLabelData = listOf("1주", "2주", "3주", "4주")
+                (xAxisLabelData[value.toInt()])
+            }
+        ),
+        bottomAxis = rememberBottomAxis(
+            valueFormatter = { value, _ ->
+                val xAxisLabelData = listOf("1주", "2주", "3주", "4주")
+                (xAxisLabelData[value.toInt()])
+            }
+        ),
+        runInitialAnimation = false
+    )
 }
 
 @Composable

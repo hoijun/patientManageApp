@@ -1,4 +1,4 @@
-package com.example.patientManageApp.presentation.screen.loginPage
+package com.example.patientManageApp.presentation.screen.login.loginPage
 
 sealed interface LoginUiState {
     data object IDlE : LoginUiState

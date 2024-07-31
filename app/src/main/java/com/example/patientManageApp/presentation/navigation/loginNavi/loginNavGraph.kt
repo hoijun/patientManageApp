@@ -10,9 +10,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.patientManageApp.presentation.LoginAppScreen
 import com.example.patientManageApp.presentation.moveScreen
-import com.example.patientManageApp.presentation.screen.loginPage.LoginScreen
-import com.example.patientManageApp.presentation.screen.settingPatientProfilePage.SettingPatientProfile
-import com.example.patientManageApp.presentation.screen.settingUserProfilePage.SettingUserProfile
+import com.example.patientManageApp.presentation.screen.login.loginPage.LoginScreen
+import com.example.patientManageApp.presentation.screen.login.loginPage.TermOfServiceScreen
+import com.example.patientManageApp.presentation.screen.login.settingProfilePage.SettingProfileProfile
 
 @Composable
 fun LoginNavHost(navController: NavHostController, startDestination: String) {
@@ -42,19 +42,20 @@ fun LoginNavHost(navController: NavHostController, startDestination: String) {
         }
     ) {
         composable(route = LoginAppScreen.Login.route) {
-            LoginScreen {
-                moveScreen(navController, LoginAppScreen.UserProfile.route)
+            LoginScreen { loginSns ->
+                moveScreen(navController, "${LoginAppScreen.TermOfService.route}/${loginSns}")
             }
         }
 
-        composable(route = LoginAppScreen.UserProfile.route) {
-            SettingUserProfile {
-                moveScreen(navController, LoginAppScreen.PatientProfile.route)
+        composable(route = LoginAppScreen.TermOfService.route + "/{sns}") { backstackEntry ->
+            TermOfServiceScreen {
+                val loginSns = backstackEntry.arguments?.getString("sns")
+                moveScreen(navController, "${LoginAppScreen.UserProfile.route}/${loginSns}")
             }
         }
 
-        composable(route = LoginAppScreen.PatientProfile.route) {
-            SettingPatientProfile()
+        composable(route = LoginAppScreen.UserProfile.route + "/{sns}") { backstackEntry ->
+            SettingProfileProfile(backstackEntry.arguments?.getString("sns"))
         }
     }
 }
@@ -62,8 +63,8 @@ fun LoginNavHost(navController: NavHostController, startDestination: String) {
 private fun getIndexForRoute(route: String): Int {
     return when (route) {
         LoginAppScreen.Login.route -> 0
-        LoginAppScreen.UserProfile.route -> 1
-        LoginAppScreen.PatientProfile.route -> 2
+        LoginAppScreen.TermOfService.route -> 1
+        LoginAppScreen.UserProfile.route -> 2
         else -> -1
     }
 }

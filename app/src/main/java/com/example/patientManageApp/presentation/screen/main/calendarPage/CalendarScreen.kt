@@ -1,4 +1,4 @@
-package com.example.patientManageApp.presentation.screen.calendarPage
+package com.example.patientManageApp.presentation.screen.main.calendarPage
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Canvas

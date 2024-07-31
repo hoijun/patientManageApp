@@ -9,4 +9,5 @@ interface FirebaseRepository {
     suspend fun getPatientData(): FirebaseApiResult<PatientEntity>
     suspend fun updateUserData(userEntity: UserEntity): FirebaseApiResult<Boolean>
     suspend fun updatePatientData(patientEntity: PatientEntity): FirebaseApiResult<Boolean>
+    suspend fun updateAgreeTermOfService(): FirebaseApiResult<Boolean>
 }

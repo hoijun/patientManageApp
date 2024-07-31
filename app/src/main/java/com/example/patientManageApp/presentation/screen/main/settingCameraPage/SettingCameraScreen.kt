@@ -1,4 +1,4 @@
-package com.example.patientManageApp.presentation.screen.homePage
+package com.example.patientManageApp.presentation.screen.main.settingCameraPage
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.indication

@@ -1,4 +1,4 @@
-package com.example.patientManageApp.presentation.screen.loginPage
+package com.example.patientManageApp.presentation.screen.login.loginPage
 
 import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
@@ -32,16 +32,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -64,11 +68,8 @@ import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "CoroutineCreationDuringComposition")
 @Composable
-fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), movePage: () -> Unit) {
-    val context = LocalContext.current
-    val snackBarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
-    val loginState: LoginUiState by viewModel.loginUiState.collectAsState()
+fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), movePage: (sns: String) -> Unit) {
+    BackOnPressed()
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -76,7 +77,12 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), movePage: () -> Uni
         viewModel.googleLogin(activityResult = it)
     }
 
-    BackOnPressed()
+    var snsLoginState by remember { mutableStateOf("") }
+
+    val loginState: LoginUiState by viewModel.loginUiState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+    val snackBarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     when (loginState) {
         LoginUiState.SingIn -> {
@@ -88,7 +94,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), movePage: () -> Uni
         LoginUiState.LoginError -> {
             Scaffold(
                 modifier = Modifier.fillMaxSize(),
-                snackbarHost = { SnackbarHost(hostState = snackBarHostState)}
+                snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
             ) {
                 coroutineScope.launch {
                     snackBarHostState.showSnackbar(
@@ -101,7 +107,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), movePage: () -> Uni
         }
 
         LoginUiState.SingUp -> {
-            movePage()
+            movePage(snsLoginState)
         }
 
         LoginUiState.IsLoading -> {
@@ -113,17 +119,45 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), movePage: () -> Uni
                     .noRippleClickable(false) { },
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = Color.Black, strokeWidth = 6.dp, strokeCap = StrokeCap.Round)
+                CircularProgressIndicator(
+                    color = Color.Black,
+                    strokeWidth = 6.dp,
+                    strokeCap = StrokeCap.Round
+                )
             }
         }
 
-        LoginUiState.IDlE ->  { }
+        LoginUiState.IDlE -> {}
     }
 
+    LoginScreen(
+        onKakaoLogin = {
+            kakaoLogin(context, viewModel)
+            snsLoginState = "kakao"
+        },
+        onNaverLogin = {
+            naverLogin(context, viewModel)
+            snsLoginState = "naver"
+        },
+        onGoogleLogin = {
+            googleLogin(context, viewModel, launcher)
+            snsLoginState = "google"
+        }
+    )
+}
+
+@Composable
+fun LoginScreen(
+    onKakaoLogin: () -> Unit,
+    onNaverLogin: () -> Unit,
+    onGoogleLogin: () -> Unit)
+{
     Column {
         ScreenHeader(pageName = "로그인")
-        Box(modifier = Modifier.weight(1f),
-            contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier.weight(1f),
+            contentAlignment = Alignment.Center
+        ) {
             Column {
                 Text(
                     text = "소셜 로그인으로",
@@ -144,101 +178,97 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), movePage: () -> Uni
                         .padding(top = 5.dp)
                 )
 
-                Button(
-                    onClick = { kakaoLogin(context, viewModel) },
-                    colors = ButtonDefaults.buttonColors(Color(0xffFEE500)),
-                    shape = RoundedCornerShape(5.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 30.dp, end = 30.dp, top = 50.dp)
+                SnsLoginButton(
+                    "카카오로 시작하기",
+                    Color(0xffFEE500),
+                    painterResource(id = R.drawable.kakao_symbol)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 5.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.kakao_symbol),
-                            contentDescription = "kakao",
-                            modifier = Modifier.size(30.dp)
-                        )
-                        Text(
-                            text = "카카오로 시작하기",
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(),
-                            textAlign = TextAlign.Center,
-                            color = Color.Black,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    onKakaoLogin()
                 }
-
-                Button(
-                    onClick = { naverLogin(context, viewModel) },
-                    colors = ButtonDefaults.buttonColors(Color(0xff03c75a)),
-                    shape = RoundedCornerShape(5.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 20.dp, horizontal = 30.dp)
+                SnsLoginButton(
+                    "네이버로 시작하기",
+                    Color(0xff03c75a),
+                    painterResource(id = R.drawable.naver_symbol)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 5.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.naver_symbol),
-                            contentDescription = "naver",
-                            modifier = Modifier.size(30.dp)
-                        )
-                        Text(
-                            text = "네이버로 시작하기",
-                            modifier = Modifier.weight(1f),
-                            textAlign = TextAlign.Center,
-                            color = Color.Black,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    onNaverLogin()
                 }
-
-                Button(
-                    onClick = { googleLogin(context, viewModel, launcher) },
-                    colors = ButtonDefaults.buttonColors(Color(0xff4285F4)),
-                    shape = RoundedCornerShape(5.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 30.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 5.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.google_symbol),
-                            contentDescription = "google",
-                            modifier = Modifier
-                                .size(30.dp)
-                                .background(Color.White, RoundedCornerShape(2.dp))
-                                .padding(2.5.dp)
-                        )
-                        Text(
-                            text = "구글로 시작하기",
-                            modifier = Modifier.weight(1f),
-                            textAlign = TextAlign.Center,
-                            color = Color.Black,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                GoogleLoginButton {
+                    onGoogleLogin()
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun SnsLoginButton(text: String, color: Color, icon: Painter, onClick: () -> Unit) {
+    Button(
+        onClick = { onClick() },
+        colors = ButtonDefaults.buttonColors(color),
+        shape = RoundedCornerShape(5.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 30.dp, end = 30.dp, top = 50.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 5.dp)
+        ) {
+            Image(
+                painter = icon,
+                contentDescription = text,
+                modifier = Modifier.size(30.dp)
+            )
+            Text(
+                text = text,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(),
+                textAlign = TextAlign.Center,
+                color = Color.Black,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+private fun GoogleLoginButton(onClick: () -> Unit) {
+    Button(
+        onClick = { onClick() },
+        colors = ButtonDefaults.buttonColors(Color(0xff4285F4)),
+        shape = RoundedCornerShape(5.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 30.dp, end = 30.dp, top = 50.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 5.dp)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.google_symbol),
+                contentDescription = "google",
+                modifier = Modifier
+                    .size(30.dp)
+                    .background(Color.White, RoundedCornerShape(2.dp))
+                    .padding(2.5.dp)
+            )
+            Text(
+                text = "구글로 시작하기",
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(),
+                textAlign = TextAlign.Center,
+                color = Color.Black,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
@@ -303,4 +333,10 @@ private fun googleLogin(
 
     val googleSignInClient = GoogleSignIn.getClient(context, googleSignInOptions)
     launcher.launch(googleSignInClient.signInIntent)
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LoginScreenPreview() {
+    LoginScreen(onKakaoLogin = {}, onNaverLogin = {}, onGoogleLogin = {})
 }

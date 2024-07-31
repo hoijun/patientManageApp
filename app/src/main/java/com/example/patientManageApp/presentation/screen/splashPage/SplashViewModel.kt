@@ -1,5 +1,6 @@
 package com.example.patientManageApp.presentation.screen.splashPage
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,10 +17,17 @@ class SplashViewModel @Inject constructor() : ViewModel() {
     fun checkLoginState() {
         try {
             val currentUser = auth.currentUser
-            if (currentUser != null) {
-                autoLogin()
-            } else {
+            if (currentUser == null) {
                 notAutoLogin()
+                return
+            }
+            currentUser.getIdToken(true).addOnCompleteListener { task ->
+                if (!task.isSuccessful) {
+                    auth.signOut()
+                    notAutoLogin()
+                    return@addOnCompleteListener
+                }
+                autoLogin()
             }
         } catch (e: Exception) {
             isError()

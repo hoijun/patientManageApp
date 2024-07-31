@@ -1,4 +1,4 @@
-package com.example.patientManageApp.presentation.screen.calendarPage
+package com.example.patientManageApp.presentation.screen.main.calendarPage
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border

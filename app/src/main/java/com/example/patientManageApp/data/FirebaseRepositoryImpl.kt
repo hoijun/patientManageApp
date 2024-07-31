@@ -1,6 +1,5 @@
 package com.example.patientManageApp.data
 
-import android.util.Log
 import com.example.patientManageApp.domain.entity.PatientEntity
 import com.example.patientManageApp.domain.entity.UserEntity
 import com.example.patientManageApp.domain.repository.FirebaseRepository
@@ -13,8 +12,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class FirebaseRepositoryImpl @Inject constructor(db: FirebaseDatabase) : FirebaseRepository {
-    private val userRef = db.getReference("Users").child(Firebase.auth.currentUser!!.uid)
+class FirebaseRepositoryImpl @Inject constructor(private val db: FirebaseDatabase) : FirebaseRepository {
     override suspend fun getUserData(): FirebaseApiResult<UserEntity> {
         TODO("Not yet implemented")
     }
@@ -24,15 +22,21 @@ class FirebaseRepositoryImpl @Inject constructor(db: FirebaseDatabase) : Firebas
     }
 
     override suspend fun updateUserData(userEntity: UserEntity): FirebaseApiResult<Boolean> = try {
-        Log.d("savepoint", userRef.toString())
-        userRef.child("UserData").setValue(userEntity).await()
+        db.getReference("Users").child(Firebase.auth.currentUser!!.uid).child("UserData").setValue(userEntity).await()
         FirebaseApiResult.Success(true)
     } catch (e: Exception) {
         FirebaseApiResult.Error(e)
     }
 
     override suspend fun updatePatientData(patientEntity: PatientEntity): FirebaseApiResult<Boolean> = try {
-        userRef.child("PatientData").setValue(patientEntity).await()
+        db.getReference("Users").child(Firebase.auth.currentUser!!.uid).child("PatientData").setValue(patientEntity).await()
+        FirebaseApiResult.Success(true)
+    } catch (e: Exception) {
+        FirebaseApiResult.Error(e)
+    }
+
+    override suspend fun updateAgreeTermOfService(): FirebaseApiResult<Boolean> =  try {
+        db.getReference("Users").child(Firebase.auth.currentUser!!.uid).child("agreeTermOfService").setValue(true).await()
         FirebaseApiResult.Success(true)
     } catch (e: Exception) {
         FirebaseApiResult.Error(e)

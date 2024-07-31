@@ -20,10 +20,9 @@ sealed class AppScreen(
 }
 
 sealed class LoginAppScreen(
-    val route: String,
-    @StringRes val title: Int
+    val route: String
 ) {
-    data object Login: LoginAppScreen("login", R.string.login)
-    data object UserProfile: LoginAppScreen("userProfile", R.string.userProfile)
-    data object PatientProfile: LoginAppScreen("patientProfile", R.string.patientProfile)
+    data object Login: LoginAppScreen("login")
+    data object TermOfService: LoginAppScreen("termOfService")
+    data object UserProfile: LoginAppScreen("userProfile")
 }

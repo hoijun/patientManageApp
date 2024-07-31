@@ -1,4 +1,4 @@
-package com.example.patientManageApp.presentation.screen.userProfileScreen
+package com.example.patientManageApp.presentation.screen.main.userProfilePage
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility

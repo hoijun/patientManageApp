@@ -1,4 +1,4 @@
-package com.example.patientManageApp.presentation.screen.homePage
+package com.example.patientManageApp.presentation.screen.main.homePage
 
 import android.content.Intent
 import androidx.compose.foundation.Canvas

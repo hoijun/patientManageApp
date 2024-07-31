@@ -11,14 +11,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.patientManageApp.presentation.AppScreen
-import com.example.patientManageApp.presentation.screen.analysisPage.AnalysisScreen
-import com.example.patientManageApp.presentation.screen.calendarPage.CalendarScreen
-import com.example.patientManageApp.presentation.screen.calendarPage.DetailCalendarInfoScreen
-import com.example.patientManageApp.presentation.screen.homePage.HomeScreen
-import com.example.patientManageApp.presentation.screen.homePage.SettingCameraScreen
-import com.example.patientManageApp.presentation.screen.myPagePage.MyPageScreen
-import com.example.patientManageApp.presentation.screen.patientProfilePage.PatientProfileScreen
-import com.example.patientManageApp.presentation.screen.userProfileScreen.UserProfileScreen
+import com.example.patientManageApp.presentation.screen.main.analysisPage.AnalysisScreen
+import com.example.patientManageApp.presentation.screen.main.calendarPage.CalendarScreen
+import com.example.patientManageApp.presentation.screen.main.calendarPage.DetailCalendarInfoScreen
+import com.example.patientManageApp.presentation.screen.main.homePage.HomeScreen
+import com.example.patientManageApp.presentation.screen.main.settingCameraPage.SettingCameraScreen
+import com.example.patientManageApp.presentation.screen.main.myPagePage.MyPageScreen
+import com.example.patientManageApp.presentation.screen.main.patientProfilePage.PatientProfileScreen
+import com.example.patientManageApp.presentation.screen.main.userProfilePage.UserProfileScreen
 
 @Composable
 fun MainNavHost(navController: NavHostController, startDestination: String) {
@@ -36,9 +36,9 @@ fun MainNavHost(navController: NavHostController, startDestination: String) {
                 slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up, tween(250))
             }
             else if (currentIndex < targetIndex) {
-                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left, tween(100))
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left, tween(150))
             } else {
-                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right, tween(100))
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right, tween(150))
             }
         },
         exitTransition = {
@@ -48,9 +48,9 @@ fun MainNavHost(navController: NavHostController, startDestination: String) {
                 ExitTransition.None
             }
             else if (targetIndex > currentIndex) {
-                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left, tween(100))
+                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left, tween(150))
             } else {
-                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right, tween(100))
+                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right, tween(150))
             }
         }
     ) {

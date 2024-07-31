@@ -7,7 +7,7 @@
 
     <application
         android:name=".GlobalApplication"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -19,9 +19,12 @@
         <activity
             android:name=".presentation.SplashActivity"
             android:exported="true"
-            android:label="@string/title_activity_splash"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.patientManageApp">
+            android:theme="@style/Theme.Splash.MySplash">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
 
 
@@ -30,12 +33,7 @@
             android:exported="true"
             android:label="@string/title_activity_login"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.patientManageApp">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:theme="@style/Theme.patientManageApp"/>
 
         <activity
             android:name=".presentation.WebCamActivity"
