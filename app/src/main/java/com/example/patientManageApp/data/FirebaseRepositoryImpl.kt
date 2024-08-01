@@ -13,12 +13,23 @@ import javax.inject.Singleton
 
 @Singleton
 class FirebaseRepositoryImpl @Inject constructor(private val db: FirebaseDatabase) : FirebaseRepository {
-    override suspend fun getUserData(): FirebaseApiResult<UserEntity> {
-        TODO("Not yet implemented")
+    override suspend fun getUserData(): FirebaseApiResult<UserEntity> = try {
+        val userData =
+            db.getReference("Users").child(Firebase.auth.currentUser!!.uid).child("UserData").get()
+                .await().getValue(UserEntity::class.java) ?: UserEntity("", "")
+        FirebaseApiResult.Success(userData)
+    } catch (e: Exception) {
+        FirebaseApiResult.Error(e)
     }
 
-    override suspend fun getPatientData(): FirebaseApiResult<PatientEntity> {
-        TODO("Not yet implemented")
+    override suspend fun getPatientData(): FirebaseApiResult<PatientEntity> = try {
+        val patientData =
+            db.getReference("Users").child(Firebase.auth.currentUser!!.uid).child("PatientData")
+                .get()
+                .await().getValue(PatientEntity::class.java) ?: PatientEntity("", "")
+        FirebaseApiResult.Success(patientData)
+    } catch (e: Exception) {
+        FirebaseApiResult.Error(e)
     }
 
     override suspend fun updateUserData(userEntity: UserEntity): FirebaseApiResult<Boolean> = try {

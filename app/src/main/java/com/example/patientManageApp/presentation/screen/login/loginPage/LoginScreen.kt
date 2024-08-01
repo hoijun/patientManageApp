@@ -30,6 +30,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,6 +55,7 @@ import com.example.patientManageApp.BuildConfig
 import com.example.patientManageApp.presentation.MainActivity
 import com.example.patientManageApp.R
 import com.example.patientManageApp.presentation.BackOnPressed
+import com.example.patientManageApp.presentation.LoadingDialog
 import com.example.patientManageApp.presentation.ScreenHeader
 import com.example.patientManageApp.presentation.noRippleClickable
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -80,7 +82,6 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), movePage: (sns: Str
     var snsLoginState by remember { mutableStateOf("") }
 
     val loginState: LoginUiState by viewModel.loginUiState.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
     val snackBarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
@@ -96,7 +97,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), movePage: (sns: Str
                 modifier = Modifier.fillMaxSize(),
                 snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
             ) {
-                coroutineScope.launch {
+                LaunchedEffect(snackBarHostState) {
                     snackBarHostState.showSnackbar(
                         message = "로그인에 실패했습니다.",
                         actionLabel = "닫기",
@@ -111,20 +112,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), movePage: (sns: Str
         }
 
         LoginUiState.IsLoading -> {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(0.5f))
-                    .zIndex(Float.MAX_VALUE)
-                    .noRippleClickable(false) { },
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(
-                    color = Color.Black,
-                    strokeWidth = 6.dp,
-                    strokeCap = StrokeCap.Round
-                )
-            }
+            LoadingDialog()
         }
 
         LoginUiState.IDlE -> {}

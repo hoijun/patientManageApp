@@ -139,10 +139,10 @@ class SettingProfileViewModel @Inject constructor(private val useCases: UseCases
             .onSuccess { termResult.complete(true) }
             .onError { termResult.complete(false) }
 
-        if (userResult.await() && patientResult.await() && termResult.await()) {
-            isSuccess()
-        } else {
+        if (!userResult.await() && !patientResult.await() && !termResult.await()) {
             isError()
+        } else {
+            isSuccess()
         }
     }
 

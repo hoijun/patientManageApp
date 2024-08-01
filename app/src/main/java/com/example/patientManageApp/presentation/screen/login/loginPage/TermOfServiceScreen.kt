@@ -52,7 +52,7 @@ fun TermOfServiceScreen(movePage: () -> Unit) {
     var isCheckedFirst by remember { mutableStateOf(false) }
     var isCheckedSecond by remember { mutableStateOf(false) }
     val isSubmitEnabled by remember {
-        derivedStateOf { isCheckedFirst &&isCheckedSecond }
+        derivedStateOf { isCheckedFirst && isCheckedSecond }
     }
     val allCheck = isCheckedFirst && isCheckedSecond
 

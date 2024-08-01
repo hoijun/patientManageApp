@@ -1,5 +1,6 @@
 package com.example.patientManageApp.presentation.screen.main.myPagePage
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,6 +12,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -29,6 +31,7 @@ import com.example.patientManageApp.presentation.ScreenHeader
 import com.example.patientManageApp.presentation.innerShadow
 import com.example.patientManageApp.presentation.moveScreen
 import com.example.patientManageApp.presentation.noRippleClickable
+import com.example.patientManageApp.presentation.screen.main.MainViewModel
 
 @Composable
 fun MyPageScreen(navController: NavHostController) {

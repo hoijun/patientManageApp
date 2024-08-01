@@ -14,7 +14,9 @@ import androidx.navigation.compose.rememberNavController
 import com.example.patientManageApp.presentation.navigation.mainNavi.MainBottomNavigation
 import com.example.patientManageApp.presentation.navigation.mainNavi.MainNavHost
 import com.example.patientManageApp.presentation.theme.PatientManageAppTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

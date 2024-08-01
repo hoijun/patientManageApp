@@ -7,17 +7,19 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.patientManageApp.presentation.AppScreen
+import com.example.patientManageApp.presentation.screen.main.MainViewModel
 import com.example.patientManageApp.presentation.screen.main.analysisPage.AnalysisScreen
 import com.example.patientManageApp.presentation.screen.main.calendarPage.CalendarScreen
 import com.example.patientManageApp.presentation.screen.main.calendarPage.DetailCalendarInfoScreen
 import com.example.patientManageApp.presentation.screen.main.homePage.HomeScreen
-import com.example.patientManageApp.presentation.screen.main.settingCameraPage.SettingCameraScreen
 import com.example.patientManageApp.presentation.screen.main.myPagePage.MyPageScreen
 import com.example.patientManageApp.presentation.screen.main.patientProfilePage.PatientProfileScreen
+import com.example.patientManageApp.presentation.screen.main.settingCameraPage.SettingCameraScreen
 import com.example.patientManageApp.presentation.screen.main.userProfilePage.UserProfileScreen
 
 @Composable
@@ -55,7 +57,8 @@ fun MainNavHost(navController: NavHostController, startDestination: String) {
         }
     ) {
         composable(route = AppScreen.Home.route) {
-            HomeScreen(navController)
+            val viewModel: MainViewModel = hiltViewModel()
+            HomeScreen(navController, viewModel)
         }
 
         composable(route = AppScreen.SettingCamera.route) {

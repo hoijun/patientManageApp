@@ -51,6 +51,7 @@ import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.patientManageApp.BuildConfig
 import com.example.patientManageApp.presentation.DateBottomSheet
+import com.example.patientManageApp.presentation.LoadingDialog
 import com.example.patientManageApp.presentation.MainActivity
 import com.example.patientManageApp.presentation.ScreenHeader
 import com.example.patientManageApp.presentation.noRippleClickable
@@ -84,20 +85,7 @@ fun SettingProfileProfile(loginSns: String?, viewModel: SettingProfileViewModel 
             }
 
             SettingProfileUiState.Loading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(0.5f))
-                        .zIndex(Float.MAX_VALUE)
-                        .noRippleClickable(false) { },
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = Color.Black,
-                        strokeWidth = 6.dp,
-                        strokeCap = StrokeCap.Round
-                    )
-                }
+                LoadingDialog()
             }
 
             SettingProfileUiState.Success -> {
