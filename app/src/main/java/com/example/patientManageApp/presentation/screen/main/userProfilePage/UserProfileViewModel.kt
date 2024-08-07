@@ -1,0 +1,97 @@
+package com.example.patientManageApp.presentation.screen.main.userProfilePage
+
+import android.util.Log
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.patientManageApp.domain.entity.UserEntity
+import com.example.patientManageApp.domain.usecase.UseCases
+import com.example.patientManageApp.domain.utils.onError
+import com.example.patientManageApp.domain.utils.onSuccess
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.kakao.sdk.user.UserApiClient
+import com.navercorp.nid.NaverIdLoginSDK
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class UserProfileViewModel@Inject constructor(private val useCase: UseCases): ViewModel() {
+    private val _userProfileUiState = MutableStateFlow<UserProfileUiState>(UserProfileUiState.Idle)
+    val userProfileUiState = _userProfileUiState.asStateFlow()
+
+    fun updateUserData(userEntity: UserEntity) = viewModelScope.launch {
+        isLoading()
+        useCase.updateUserData(userEntity)
+            .onSuccess { isUpdateSuccess() }
+            .onError { isError() }
+    }
+
+    fun logout() = viewModelScope.launch {
+        isLoading()
+        val auth = Firebase.auth
+        val email = auth.currentUser?.email
+
+        if (email == null) {
+            isError()
+            return@launch
+        }
+
+        Log.d("savepoint", email)
+
+        try {
+            if (email.contains("naver.com")) {
+                NaverIdLoginSDK.logout()
+                auth.signOut()
+                isLogoutSuccess()
+            } else if (email.contains("kakao.com")) {
+                UserApiClient.instance.logout kakaoLogin@{ error ->
+                    if(error != null) {
+                        isError()
+                        return@kakaoLogin
+                    }
+                    auth.signOut()
+                    isLogoutSuccess()
+                }
+            } else if (email.contains("gmail.com")) {
+                auth.signOut()
+                isLogoutSuccess()
+            }
+        } catch (e: Exception) {
+            isError()
+        }
+    }
+
+    fun withdrawal() = viewModelScope.launch {
+        isLoading()
+        useCase.removeUserData()
+            .onSuccess { isWithdrawalSuccess() }
+            .onError { isError() }
+    }
+
+    fun isIdle() {
+        _userProfileUiState.value = UserProfileUiState.Idle
+    }
+
+    private fun isLoading() {
+        _userProfileUiState.value = UserProfileUiState.Loading
+    }
+
+    private fun isError() {
+        _userProfileUiState.value = UserProfileUiState.Error
+    }
+
+    private fun isUpdateSuccess() {
+        _userProfileUiState.value = UserProfileUiState.UpdateSuccess
+    }
+
+    private fun isLogoutSuccess() {
+        _userProfileUiState.value = UserProfileUiState.LogoutSuccess
+    }
+
+    private fun isWithdrawalSuccess() {
+        _userProfileUiState.value = UserProfileUiState.WithdrawalSuccess
+    }
+}

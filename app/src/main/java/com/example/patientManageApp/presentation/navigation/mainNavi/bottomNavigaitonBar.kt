@@ -38,6 +38,7 @@ fun MainBottomNavigation(
         AppScreen.Analysis,
         AppScreen.MyPage
     )
+
     AnimatedVisibility(
         visible = items.map { it.route }.contains(currentRoute)) {
         BottomNavigation(

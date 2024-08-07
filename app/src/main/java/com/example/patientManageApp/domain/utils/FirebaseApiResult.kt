@@ -1,7 +1,5 @@
 package com.example.patientManageApp.domain.utils
 
-import android.util.Log
-
 sealed class FirebaseApiResult<T> {
     data class Success<T>(val data: T) : FirebaseApiResult<T>()
     data class Error<T>(val error: Exception) : FirebaseApiResult<T>()

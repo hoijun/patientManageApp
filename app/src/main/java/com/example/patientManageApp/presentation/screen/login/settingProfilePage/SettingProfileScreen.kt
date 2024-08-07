@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.patientManageApp.BuildConfig
+import com.example.patientManageApp.presentation.CustomDivider
 import com.example.patientManageApp.presentation.DateBottomSheet
 import com.example.patientManageApp.presentation.LoadingDialog
 import com.example.patientManageApp.presentation.MainActivity
@@ -130,10 +131,13 @@ private fun SettingProfileScreen(
          patientName: String,
          patientBirth: String) -> Unit)
 {
-    var userBirth by remember { mutableStateOf("") }
     var userName by remember { mutableStateOf("") }
+    var userBirth by remember { mutableStateOf("") }
     var patientName by remember { mutableStateOf("") }
     var patientBirth by remember { mutableStateOf("") }
+
+    var isUserBirthBottomSheetOpen by remember { mutableStateOf(false) }
+    var isPatientBirthBottomSheetOpen by remember { mutableStateOf(false) }
 
     val isSubmitEnabled by remember {
         derivedStateOf {
@@ -141,9 +145,6 @@ private fun SettingProfileScreen(
                     && patientName.isNotEmpty() && patientBirth.isNotEmpty()
         }
     }
-
-    var isUserBirthBottomSheetOpen by remember { mutableStateOf(false) }
-    var isPatientBirthBottomSheetOpen by remember { mutableStateOf(false) }
 
     if (isUserBirthBottomSheetOpen) {
         DateBottomSheet(modifier = Modifier, closeSheet = {
@@ -164,7 +165,7 @@ private fun SettingProfileScreen(
 
         NameInputField(description = "사용자 이름", value = userName) { userName = it }
 
-        Divider(horizontal = 20.dp, vertical = 20.dp)
+        CustomDivider(horizontal = 20.dp, vertical = 20.dp)
 
         BirthInputField(description = "사용자 생일", value = userBirth) { isUserBirthBottomSheetOpen = true }
 
@@ -178,14 +179,14 @@ private fun SettingProfileScreen(
 
         NameInputField(description = "환자 이름 ", value = patientName) { patientName = it }
 
-        Divider(horizontal = 20.dp, vertical = 20.dp)
+        CustomDivider(horizontal = 20.dp, vertical = 20.dp)
 
         BirthInputField(description = "환자 생일", value = patientBirth) { isPatientBirthBottomSheetOpen = true }
 
         Spacer(modifier = Modifier.weight(1f))
 
         SubmitButton(enabled = isSubmitEnabled) {
-            onClick(userBirth, userName, patientName, patientBirth)
+            onClick(userName, userBirth, patientName, patientBirth)
         }
     }
 }
@@ -238,17 +239,6 @@ private fun BirthInputField(description: String, value: String, onClick: () -> U
             )
         }
     }
-}
-
-@Composable
-private fun Divider(horizontal: Dp, vertical: Dp) {
-    HorizontalDivider(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = horizontal, vertical = vertical),
-        thickness = 1.dp,
-        color = Color(0xFFc0c2c4)
-    )
 }
 
 @Composable

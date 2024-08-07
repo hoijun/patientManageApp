@@ -28,6 +28,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -61,6 +62,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import com.example.patientManageApp.R
 import java.time.LocalDate
@@ -123,51 +127,6 @@ fun SubScreenHeader(pageName: String, onBackBtnClick: () -> Unit) {
                 strokeWidth = 1.dp.toPx()
             )
         }
-    }
-}
-
-@Composable
-fun Modifier.noRippleClickable(
-    enabled: Boolean = true,
-    onClick: () -> Unit
-) = this.clickable(
-    enabled = enabled,
-    indication = null,
-    interactionSource = remember {
-        MutableInteractionSource()
-    }
-) {
-    onClick()
-}
-
-@Composable
-fun Modifier.innerShadow(
-    shape: Shape,
-    color: Color = Color.Black,
-    blur: Dp = 4.dp,
-    offsetY: Dp = 2.dp,
-    offsetX: Dp = 2.dp
-) = this.drawWithContent {
-    drawContent()
-    drawIntoCanvas { canvas ->
-        val shadowSize = Size(size.width, size.height)
-        val shadowOutline = shape.createOutline(shadowSize, layoutDirection, this)
-        val paint = Paint()
-        paint.color = color
-        canvas.saveLayer(size.toRect(), paint)
-        canvas.drawOutline(shadowOutline, paint)
-
-        paint.asFrameworkPaint().apply {
-            xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
-            if (blur.toPx() > 0) {
-                maskFilter = BlurMaskFilter(blur.toPx(), BlurMaskFilter.Blur.NORMAL)
-            }
-        }
-
-        paint.color = Color.Black
-        canvas.translate(offsetX.toPx(), offsetY.toPx())
-        canvas.drawOutline(shadowOutline, paint)
-        canvas.restore()
     }
 }
 
@@ -343,6 +302,71 @@ fun LoadingDialog() {
             strokeCap = StrokeCap.Round
         )
     }
+}
+
+@Composable
+fun Modifier.innerShadow(
+    shape: Shape,
+    color: Color = Color.Black,
+    blur: Dp = 4.dp,
+    offsetY: Dp = 2.dp,
+    offsetX: Dp = 2.dp
+) = this.drawWithContent {
+    drawContent()
+    drawIntoCanvas { canvas ->
+        val shadowSize = Size(size.width, size.height)
+        val shadowOutline = shape.createOutline(shadowSize, layoutDirection, this)
+        val paint = Paint()
+        paint.color = color
+        canvas.saveLayer(size.toRect(), paint)
+        canvas.drawOutline(shadowOutline, paint)
+
+        paint.asFrameworkPaint().apply {
+            xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
+            if (blur.toPx() > 0) {
+                maskFilter = BlurMaskFilter(blur.toPx(), BlurMaskFilter.Blur.NORMAL)
+            }
+        }
+
+        paint.color = Color.Black
+        canvas.translate(offsetX.toPx(), offsetY.toPx())
+        canvas.drawOutline(shadowOutline, paint)
+        canvas.restore()
+    }
+}
+
+@Composable
+fun CustomDivider(horizontal: Dp, vertical: Dp) {
+    HorizontalDivider(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = horizontal, vertical = vertical),
+        thickness = 1.dp,
+        color = Color(0xFFc0c2c4)
+    )
+}
+
+@Composable
+fun Modifier.noRippleClickable(
+    enabled: Boolean = true,
+    onClick: () -> Unit
+) = this.clickable(
+    enabled = enabled,
+    indication = null,
+    interactionSource = remember {
+        MutableInteractionSource()
+    }
+) {
+    onClick()
+}
+
+@Composable
+inline fun <reified T: ViewModel> NavBackStackEntry.sharedViewModel(navController: NavHostController): T {
+    val navGraphRoute = destination.parent?.route ?: return hiltViewModel()
+    val parentEntry = remember(this) {
+        navController.getBackStackEntry(navGraphRoute)
+    }
+    return hiltViewModel(parentEntry)
 }
 
 fun moveScreen(navController: NavHostController, route: String) {

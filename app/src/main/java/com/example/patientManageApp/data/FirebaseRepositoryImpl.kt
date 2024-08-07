@@ -46,6 +46,10 @@ class FirebaseRepositoryImpl @Inject constructor(private val db: FirebaseDatabas
         FirebaseApiResult.Error(e)
     }
 
+    override suspend fun removeUserData(): FirebaseApiResult<Boolean> {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun updateAgreeTermOfService(): FirebaseApiResult<Boolean> =  try {
         db.getReference("Users").child(Firebase.auth.currentUser!!.uid).child("agreeTermOfService").setValue(true).await()
         FirebaseApiResult.Success(true)

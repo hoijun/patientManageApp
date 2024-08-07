@@ -7,7 +7,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -23,11 +22,12 @@ import com.example.patientManageApp.presentation.screen.main.settingCameraPage.S
 import com.example.patientManageApp.presentation.screen.main.userProfilePage.UserProfileScreen
 
 @Composable
-fun MainNavHost(navController: NavHostController, startDestination: String) {
+fun MainNavHost(navController: NavHostController, startDestination: String, viewModel: MainViewModel) {
     NavHost(
         modifier = Modifier.fillMaxSize(),
         navController = navController,
         startDestination = startDestination,
+        route = "main",
         enterTransition = {
             val currentIndex = initialState.destination.route?.let { getIndexForRoute(it)} ?: -1
             val targetIndex = targetState.destination.route?.let { getIndexForRoute(it) } ?: -1
@@ -57,7 +57,6 @@ fun MainNavHost(navController: NavHostController, startDestination: String) {
         }
     ) {
         composable(route = AppScreen.Home.route) {
-            val viewModel: MainViewModel = hiltViewModel()
             HomeScreen(navController, viewModel)
         }
 
@@ -78,15 +77,15 @@ fun MainNavHost(navController: NavHostController, startDestination: String) {
         }
 
         composable(route = AppScreen.MyPage.route) {
-            MyPageScreen(navController)
+            MyPageScreen(navController, viewModel)
         }
 
         composable(route = AppScreen.UserProfile.route) {
-            UserProfileScreen(navController)
+            UserProfileScreen(navController, viewModel)
         }
 
         composable(route = AppScreen.PatientProfile.route) {
-            PatientProfileScreen(navController)
+            PatientProfileScreen(navController, viewModel)
         }
     }
 }

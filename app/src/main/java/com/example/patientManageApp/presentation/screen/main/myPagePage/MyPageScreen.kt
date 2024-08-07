@@ -1,6 +1,5 @@
 package com.example.patientManageApp.presentation.screen.main.myPagePage
 
-import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,15 +26,29 @@ import androidx.navigation.NavHostController
 import com.example.patientManageApp.presentation.AppScreen
 import com.example.patientManageApp.presentation.BackOnPressed
 import com.example.patientManageApp.R
+import com.example.patientManageApp.domain.entity.UserEntity
 import com.example.patientManageApp.presentation.ScreenHeader
 import com.example.patientManageApp.presentation.innerShadow
 import com.example.patientManageApp.presentation.moveScreen
 import com.example.patientManageApp.presentation.noRippleClickable
 import com.example.patientManageApp.presentation.screen.main.MainViewModel
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 @Composable
-fun MyPageScreen(navController: NavHostController) {
+fun MyPageScreen(navController: NavHostController, viewModel: MainViewModel) {
+    val userEntity = viewModel.userData.collectAsState()
     BackOnPressed()
+    MyPageScreen(
+        userEntity = userEntity.value,
+        onUserInfoBtnClick = { moveScreen(navController, AppScreen.UserProfile.route) },
+        onPatientInfoBtnClick = { moveScreen(navController, AppScreen.PatientProfile.route) }
+    )
+}
+
+@Composable
+private fun MyPageScreen(userEntity: UserEntity, onUserInfoBtnClick: () -> Unit, onPatientInfoBtnClick: () -> Unit) {
+    val auth = Firebase.auth
     Column {
         ScreenHeader(pageName = "마이페이지")
         Row(
@@ -46,7 +59,7 @@ fun MyPageScreen(navController: NavHostController) {
             Column(modifier = Modifier.padding(start = 20.dp, top = 25.dp, bottom = 25.dp)) {
                 Row {
                     Text(
-                        text = "정회준",
+                        text = userEntity.name,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -59,7 +72,7 @@ fun MyPageScreen(navController: NavHostController) {
                     )
                 }
                 Text(
-                    text = "ghlwns10@kakao.com",
+                    text = auth.currentUser?.email ?: "",
                     fontSize = 17.sp,
                     color = Color.Black,
                     modifier = Modifier.padding(top = 10.dp)
@@ -72,7 +85,7 @@ fun MyPageScreen(navController: NavHostController) {
                 modifier = Modifier
                     .padding(end = 30.dp)
                     .noRippleClickable {
-                        moveScreen(navController, AppScreen.UserProfile.route)
+                        onUserInfoBtnClick()
                     }
             )
         }
@@ -97,17 +110,11 @@ fun MyPageScreen(navController: NavHostController) {
         }
 
         SetMyPageScreenMenu("환자 정보 관리") {
-            moveScreen(navController, AppScreen.PatientProfile.route)
+            onPatientInfoBtnClick()
         }
-        SetMyPageScreenMenu("문의 하기") {
-
-        }
-        SetMyPageScreenMenu("개인 정보 처리 방침") {
-
-        }
-        SetMyPageScreenMenu("앱 사용법 보기") {
-
-        }
+        SetMyPageScreenMenu("문의 하기") { }
+        SetMyPageScreenMenu("개인 정보 처리 방침") { }
+        SetMyPageScreenMenu("앱 사용법 보기") { }
 
         Row(modifier = Modifier
             .fillMaxWidth()
@@ -141,6 +148,7 @@ fun MyPageScreen(navController: NavHostController) {
         }
     }
 }
+
 
 @Composable
 private fun SetMyPageScreenMenu(menuName: String, onClick: () -> Unit) {

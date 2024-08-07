@@ -1,6 +1,5 @@
 package com.example.patientManageApp.presentation.screen.main
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.patientManageApp.domain.entity.PatientEntity
@@ -60,6 +59,14 @@ class MainViewModel@Inject constructor(private val useCases: UseCases): ViewMode
                 isSuccess()
             }
         }
+    }
+
+    fun updateUserData(userEntity: UserEntity) {
+        _userData.value = userEntity
+    }
+
+    fun updatePatientData(patientEntity: PatientEntity) {
+        _patientData.value = patientEntity
     }
 
     private fun isLoading() {

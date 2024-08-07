@@ -129,10 +129,10 @@ class SettingProfileViewModel @Inject constructor(private val useCases: UseCases
         val patientResult = CompletableDeferred<Boolean>()
         val termResult = CompletableDeferred<Boolean>()
 
-        useCases.updateUserData(UserEntity(name, birth))
+        useCases.updateUserData(UserEntity(name = name, birth = birth))
             .onSuccess { userResult.complete(true) }
             .onError { userResult.complete(false) }
-        useCases.updatePatientData(PatientEntity(patientName, patientBirth))
+        useCases.updatePatientData(PatientEntity(name = patientName, birth = patientBirth))
             .onSuccess { patientResult.complete(true) }
             .onError { patientResult.complete(false) }
         useCases.updateAgreeTermOfService()

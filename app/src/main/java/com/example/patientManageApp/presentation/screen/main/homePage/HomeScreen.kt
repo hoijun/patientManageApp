@@ -58,34 +58,8 @@ import com.example.patientManageApp.presentation.screen.main.MainViewModel
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(navController: NavHostController, viewModel: MainViewModel) {
-    val mainUiState by viewModel.mainUiState.collectAsState()
-    val snackBarHostState = remember { SnackbarHostState() }
-
     BackOnPressed()
-
-    when (mainUiState) {
-        is MainUiState.Error -> {
-            Scaffold(
-                modifier = Modifier.fillMaxSize(),
-                snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
-            ) {
-                LaunchedEffect(snackBarHostState) {
-                    snackBarHostState.showSnackbar(
-                        message = "오류가 발생 했습니다.",
-                        actionLabel = "닫기",
-                        duration = SnackbarDuration.Short
-                    )
-                }
-            }
-        }
-
-        MainUiState.Loading -> {
-            LoadingDialog()
-        }
-
-        MainUiState.Success -> HomeScreen { moveScreen(navController, AppScreen.SettingCamera.route) }
-        MainUiState.Idle -> viewModel.getUserData()
-    }
+    HomeScreen { moveScreen(navController, AppScreen.SettingCamera.route) }
 }
 
 @Composable
@@ -197,6 +171,7 @@ private fun CameraItem(onSettingBtnClick: () -> Unit) {
                                 .align(Alignment.Center)
                                 .noRippleClickable {
                                     val intent = Intent(context, WebCamActivity::class.java)
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                     context.startActivity(intent)
                                 }
                         )
