@@ -6,5 +6,7 @@ data class UseCases(
     val updateUserData: UpdateUserData,
     val updatePatientData: UpdatePatientData,
     val removeUserData: RemoveUserData,
+    val updateCameraData: UpdateCameraData,
+    val getCameraData: GetCameraData,
     val updateAgreeTermOfService: UpdateAgreeTermOfService
 )

@@ -31,7 +31,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -43,17 +42,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.patientManageApp.R
 import com.example.patientManageApp.domain.entity.UserEntity
@@ -62,8 +61,9 @@ import com.example.patientManageApp.presentation.CustomDivider
 import com.example.patientManageApp.presentation.DateBottomSheet
 import com.example.patientManageApp.presentation.LoadingDialog
 import com.example.patientManageApp.presentation.LoginActivity
+import com.example.patientManageApp.presentation.ShadowDivider
 import com.example.patientManageApp.presentation.SubScreenHeader
-import com.example.patientManageApp.presentation.innerShadow
+import com.example.patientManageApp.presentation.WithdrawalWarningDialog
 import com.example.patientManageApp.presentation.moveScreen
 import com.example.patientManageApp.presentation.noRippleClickable
 import com.example.patientManageApp.presentation.screen.main.MainViewModel
@@ -80,6 +80,7 @@ fun UserProfileScreen(navController: NavHostController, mainViewModel: MainViewM
     val context = LocalContext.current
 
     BackHandler(enabled = backPressedState) {
+        snackBarHostState.currentSnackbarData?.dismiss()
         moveScreen(navController, AppScreen.MyPage.route)
     }
 
@@ -88,9 +89,11 @@ fun UserProfileScreen(navController: NavHostController, mainViewModel: MainViewM
         snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
     ) {
         when (userProfileUiState) {
-            UserProfileUiState.Idle -> { }
+            UserProfileUiState.Idle -> {}
 
-            UserProfileUiState.Loading -> { LoadingDialog() }
+            UserProfileUiState.Loading -> {
+                LoadingDialog()
+            }
 
             UserProfileUiState.UpdateSuccess -> {
                 LaunchedEffect(snackBarHostState) {
@@ -134,7 +137,10 @@ fun UserProfileScreen(navController: NavHostController, mainViewModel: MainViewM
 
         UserProfileScreen(userEntity = userEntity,
             email = Firebase.auth.currentUser?.email ?: "",
-            onBackButtonClick = { moveScreen(navController, AppScreen.MyPage.route) },
+            onBackButtonClick = {
+                snackBarHostState.currentSnackbarData?.dismiss()
+                moveScreen(navController, AppScreen.MyPage.route)
+            },
             onSaveButtonClick = {
                 mainViewModel.updateUserData(it)
                 userProfileViewModel.updateUserData(it)
@@ -154,12 +160,16 @@ private fun UserProfileScreen(
     onWithdrawalButtonClick: () -> Unit
 ) {
     var isBottomSheetOpen by remember { mutableStateOf(false) }
+    var isDialogOpen by remember { mutableStateOf(false) }
     var userName by remember { mutableStateOf(userEntity.name) }
     var userBirth by remember { mutableStateOf(userEntity.birth) }
     var isAbleEditUserName by remember { mutableStateOf(false) }
     var isAbleEditUserBirth by remember { mutableStateOf(false) }
     val btnVisibility by remember {
-        derivedStateOf { (isAbleEditUserName || isAbleEditUserBirth) }
+        derivedStateOf {
+            (isAbleEditUserName || isAbleEditUserBirth) &&
+                    (userEntity.name != userName || userEntity.birth != userBirth) && userName != ""
+        }
     }
 
     if (isBottomSheetOpen) {
@@ -168,6 +178,18 @@ private fun UserProfileScreen(
             userBirth = it
             isBottomSheetOpen = false
         })
+    }
+
+    if(isDialogOpen) {
+        WithdrawalWarningDialog(
+            title = "정말로 탈퇴하시겠습니까?",
+            description = "절대로 복구 불가능 합니다.\n밑의 문자를 똑같이 입력해주세요.",
+            onDismissRequest = { isDialogOpen = false },
+            onClickConfirm = {
+                onWithdrawalButtonClick()
+                isDialogOpen = false
+            }
+        )
     }
 
     Column {
@@ -202,7 +224,7 @@ private fun UserProfileScreen(
         ShadowDivider()
         LogoutButton { onLogoutButtonClick() }
         ShadowDivider()
-        WithdrawalButton { onWithdrawalButtonClick() }
+        WithdrawalButton { isDialogOpen = true }
     }
 }
 
@@ -377,33 +399,12 @@ private fun WithdrawalButton(onClick: () -> Unit) {
         textAlign = TextAlign.End)
 }
 
-@Composable
-private fun ShadowDivider() {
-    Surface(modifier = Modifier
-        .fillMaxWidth()
-        .height(15.dp)
-        .innerShadow(
-            RectangleShape,
-            color = Color.Black.copy(0.3f),
-            offsetY = (-2).dp,
-            offsetX = (-2).dp
-        )
-        .innerShadow(
-            RectangleShape,
-            color = Color.Black.copy(0.3f),
-            offsetY = 2.dp,
-            offsetX = 2.dp
-        ),
-        color = Color(0xFFc0c2c4)
-    ) { }
-}
-
 @Preview(showBackground = true)
 @Composable
 fun UserProfileScreenPreview() {
     UserProfileScreen(
-        userEntity = UserEntity("홍길동", "2000년 10월 15일"),
-        email = "william@gmail.com",
+        userEntity = UserEntity("홍길동", ""),
+        email = "",
         onBackButtonClick = {},
         onSaveButtonClick = {},
         onLogoutButtonClick = {},

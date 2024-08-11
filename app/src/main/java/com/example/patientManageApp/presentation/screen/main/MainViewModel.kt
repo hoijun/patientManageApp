@@ -2,6 +2,7 @@ package com.example.patientManageApp.presentation.screen.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.patientManageApp.domain.entity.CameraEntity
 import com.example.patientManageApp.domain.entity.PatientEntity
 import com.example.patientManageApp.domain.entity.UserEntity
 import com.example.patientManageApp.domain.usecase.UseCases
@@ -25,11 +26,15 @@ class MainViewModel@Inject constructor(private val useCases: UseCases): ViewMode
     private val _patientData = MutableStateFlow(PatientEntity("", ""))
     val patientData = _patientData.asStateFlow()
 
+    private val _cameraData = MutableStateFlow<List<CameraEntity>>(emptyList())
+    val cameraData = _cameraData.asStateFlow()
+
     fun getUserData() {
         viewModelScope.launch(Dispatchers.IO) {
             isLoading()
             val userResult = CompletableDeferred<Boolean>()
             val patientResult = CompletableDeferred<Boolean>()
+            val cameraResult = CompletableDeferred<Boolean>()
 
             useCases.getUserData().getResult(
                 success = {
@@ -53,7 +58,18 @@ class MainViewModel@Inject constructor(private val useCases: UseCases): ViewMode
                 }
             )
 
-            if (!userResult.await() && !patientResult.await()) {
+            useCases.getCameraData().getResult(
+                success = {
+                    _cameraData.value = it.data
+                    cameraResult.complete(true)
+                },
+                error = {
+                    _cameraData.value = emptyList()
+                    cameraResult.complete(false)
+                }
+            )
+
+            if (!userResult.await() && !patientResult.await() && !cameraResult.await()) {
                 isError()
             } else {
                 isSuccess()
@@ -67,6 +83,10 @@ class MainViewModel@Inject constructor(private val useCases: UseCases): ViewMode
 
     fun updatePatientData(patientEntity: PatientEntity) {
         _patientData.value = patientEntity
+    }
+
+    fun updateCameraData(cameraEntities: List<CameraEntity>) {
+        _cameraData.value = cameraEntities
     }
 
     private fun isLoading() {

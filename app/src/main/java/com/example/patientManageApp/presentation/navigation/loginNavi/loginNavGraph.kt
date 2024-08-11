@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.patientManageApp.presentation.LoginAppScreen
 import com.example.patientManageApp.presentation.moveScreen
+import com.example.patientManageApp.presentation.moveScreenWithArgs
 import com.example.patientManageApp.presentation.screen.login.loginPage.LoginScreen
 import com.example.patientManageApp.presentation.screen.login.loginPage.TermOfServiceScreen
 import com.example.patientManageApp.presentation.screen.login.settingProfilePage.SettingProfileProfile
@@ -43,14 +44,14 @@ fun LoginNavHost(navController: NavHostController, startDestination: String) {
     ) {
         composable(route = LoginAppScreen.Login.route) {
             LoginScreen { loginSns ->
-                moveScreen(navController, "${LoginAppScreen.TermOfService.route}/${loginSns}")
+                moveScreenWithArgs(navController, "${LoginAppScreen.TermOfService.route}/${loginSns}")
             }
         }
 
         composable(route = LoginAppScreen.TermOfService.route + "/{sns}") { backstackEntry ->
             TermOfServiceScreen {
                 val loginSns = backstackEntry.arguments?.getString("sns")
-                moveScreen(navController, "${LoginAppScreen.UserProfile.route}/${loginSns}")
+                moveScreenWithArgs(navController, "${LoginAppScreen.UserProfile.route}/${loginSns}")
             }
         }
 

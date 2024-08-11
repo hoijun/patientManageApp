@@ -1,6 +1,8 @@
 package com.example.patientManageApp.presentation.navigation.mainNavi
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -31,6 +33,7 @@ fun MainBottomNavigation(
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val route = currentRoute?.split("/")?.firstOrNull()
 
     val items = listOf(
         AppScreen.Home,
@@ -40,7 +43,10 @@ fun MainBottomNavigation(
     )
 
     AnimatedVisibility(
-        visible = items.map { it.route }.contains(currentRoute)) {
+        visible = items.map { it.route }.contains(route),
+        enter = EnterTransition.None,
+        exit = ExitTransition.None
+    ) {
         BottomNavigation(
             modifier = Modifier
                 .clip(RoundedCornerShape(15.dp, 15.dp))
@@ -55,7 +61,7 @@ fun MainBottomNavigation(
                         .width(24.dp)
                         .background(Color.Transparent)
                         .clip(RoundedCornerShape(16.dp)),
-                    selected = currentRoute == item.route,
+                    selected = route == item.route,
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.Gray,
                     label = {

@@ -1,11 +1,14 @@
 package com.example.patientManageApp.data
 
+import androidx.compose.ui.util.trace
+import com.example.patientManageApp.domain.entity.CameraEntity
 import com.example.patientManageApp.domain.entity.PatientEntity
 import com.example.patientManageApp.domain.entity.UserEntity
 import com.example.patientManageApp.domain.repository.FirebaseRepository
 import com.example.patientManageApp.domain.utils.FirebaseApiResult
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.GenericTypeIndicator
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -46,8 +49,27 @@ class FirebaseRepositoryImpl @Inject constructor(private val db: FirebaseDatabas
         FirebaseApiResult.Error(e)
     }
 
-    override suspend fun removeUserData(): FirebaseApiResult<Boolean> {
-        TODO("Not yet implemented")
+    override suspend fun removeUserData(): FirebaseApiResult<Boolean> = try {
+        db.getReference("Users").child(Firebase.auth.currentUser!!.uid).removeValue().await()
+        FirebaseApiResult.Success(true)
+    } catch (e: Exception) {
+        FirebaseApiResult.Error(e)
+    }
+
+    override suspend fun updateCameraData(cameraEntities: List<CameraEntity>): FirebaseApiResult<Boolean> = try {
+        db.getReference("Users").child(Firebase.auth.currentUser!!.uid).child("CameraData").setValue(cameraEntities).await()
+        FirebaseApiResult.Success(true)
+    } catch (e: Exception) {
+        FirebaseApiResult.Error(e)
+    }
+
+    override suspend fun getCameraData(): FirebaseApiResult<List<CameraEntity>> = try {
+        val cameraEntities =
+            db.getReference("Users").child(Firebase.auth.currentUser!!.uid).child("CameraData")
+                .get().await().getValue(object : GenericTypeIndicator<List<CameraEntity>>() {}) ?: emptyList()
+        FirebaseApiResult.Success(cameraEntities)
+    } catch (e: Exception) {
+        FirebaseApiResult.Error(e)
     }
 
     override suspend fun updateAgreeTermOfService(): FirebaseApiResult<Boolean> =  try {

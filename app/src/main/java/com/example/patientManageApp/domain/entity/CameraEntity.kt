@@ -1,7 +1,6 @@
 package com.example.patientManageApp.domain.entity
 
-data class PatientEntity(
+data class CameraEntity(
     val name: String = "",
-    val birth: String = ""
+    val rtspAddress: String = ""
 )
-

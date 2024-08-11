@@ -37,12 +37,14 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,6 +70,7 @@ fun PatientProfileScreen(navController: NavHostController, mainViewModel: MainVi
     val snackBarHostState = remember { SnackbarHostState() }
 
     BackHandler(enabled = backPressedState) {
+        snackBarHostState.currentSnackbarData?.dismiss()
         moveScreen(navController, AppScreen.MyPage.route)
     }
 
@@ -76,7 +79,7 @@ fun PatientProfileScreen(navController: NavHostController, mainViewModel: MainVi
         snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
     ) {
         when (patientProfileUiState) {
-            PatientProfileUiState.Idle -> { }
+            PatientProfileUiState.Idle -> {}
             PatientProfileUiState.Loading -> {
                 LoadingDialog()
             }
@@ -106,7 +109,10 @@ fun PatientProfileScreen(navController: NavHostController, mainViewModel: MainVi
 
         PatientProfileScreen(
             patientEntity,
-            onBackButtonClick = { moveScreen(navController, AppScreen.MyPage.route) },
+            onBackButtonClick = {
+                snackBarHostState.currentSnackbarData?.dismiss()
+                moveScreen(navController, AppScreen.MyPage.route)
+            },
             onSaveButtonClick = {
                 mainViewModel.updatePatientData(it)
                 patientProfileViewModel.updatePatientData(it)
@@ -123,7 +129,10 @@ fun PatientProfileScreen(patientEntity: PatientEntity, onBackButtonClick: () -> 
     var isAbleEditPatientName by remember { mutableStateOf(false) }
     var isAbleEditPatientBirth by remember { mutableStateOf(false) }
     val btnVisibility by remember {
-        derivedStateOf { (isAbleEditPatientName || isAbleEditPatientBirth) }
+        derivedStateOf {
+            ( isAbleEditPatientName || isAbleEditPatientBirth ) &&
+                    (patientEntity.name != patientName || patientEntity.birth != patientBirth) && patientName != ""
+        }
     }
 
     if (isBottomSheetOpen) {

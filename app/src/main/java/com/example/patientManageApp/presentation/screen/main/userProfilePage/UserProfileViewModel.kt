@@ -11,6 +11,8 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.kakao.sdk.user.UserApiClient
 import com.navercorp.nid.NaverIdLoginSDK
+import com.navercorp.nid.oauth.NidOAuthLogin
+import com.navercorp.nid.oauth.OAuthLoginCallback
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -67,7 +69,54 @@ class UserProfileViewModel@Inject constructor(private val useCase: UseCases): Vi
     fun withdrawal() = viewModelScope.launch {
         isLoading()
         useCase.removeUserData()
-            .onSuccess { isWithdrawalSuccess() }
+            .onSuccess {
+                val auth = Firebase.auth
+                val email = auth.currentUser?.email
+
+                if (email == null) {
+                    isError()
+                    return@onSuccess
+                }
+
+                if (email.contains("naver.com")) {
+                    NidOAuthLogin().callDeleteTokenApi(object : OAuthLoginCallback {
+                        override fun onError(errorCode: Int, message: String) {
+                            onFailure(errorCode, message)
+                        }
+
+                        override fun onFailure(httpStatus: Int, message: String) {
+                            isError()
+                        }
+
+                        override fun onSuccess() {
+                            auth.currentUser!!.delete().addOnSuccessListener {
+                                isWithdrawalSuccess()
+                            }.addOnFailureListener {
+                                isUpdateSuccess()
+                            }
+                        }
+                    })
+
+                } else if (email.contains("kakao.com")) {
+                    UserApiClient.instance.unlink { error ->
+                        if (error != null) {
+                            isError()
+                        } else {
+                            auth.currentUser!!.delete().addOnSuccessListener {
+                                isWithdrawalSuccess()
+                            }.addOnFailureListener {
+                                isUpdateSuccess()
+                            }
+                        }
+                    }
+                } else if (email.contains("gmail.com")) {
+                    auth.currentUser!!.delete().addOnSuccessListener {
+                        isWithdrawalSuccess()
+                    }.addOnFailureListener {
+                        isUpdateSuccess()
+                    }
+                }
+            }
             .onError { isError() }
     }
 

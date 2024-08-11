@@ -2,10 +2,12 @@ package com.example.patientManageApp.di
 
 import com.example.patientManageApp.data.FirebaseRepositoryImpl
 import com.example.patientManageApp.domain.repository.FirebaseRepository
+import com.example.patientManageApp.domain.usecase.GetCameraData
 import com.example.patientManageApp.domain.usecase.GetPatientData
 import com.example.patientManageApp.domain.usecase.GetUserData
 import com.example.patientManageApp.domain.usecase.RemoveUserData
 import com.example.patientManageApp.domain.usecase.UpdateAgreeTermOfService
+import com.example.patientManageApp.domain.usecase.UpdateCameraData
 import com.example.patientManageApp.domain.usecase.UpdatePatientData
 import com.example.patientManageApp.domain.usecase.UpdateUserData
 import com.example.patientManageApp.domain.usecase.UseCases
@@ -41,6 +43,8 @@ object AppModule {
         updateUserData = UpdateUserData(firebaseRepository),
         updatePatientData = UpdatePatientData(firebaseRepository),
         removeUserData = RemoveUserData(firebaseRepository),
+        updateCameraData = UpdateCameraData(firebaseRepository),
+        getCameraData = GetCameraData(firebaseRepository),
         updateAgreeTermOfService = UpdateAgreeTermOfService(firebaseRepository)
     )
 }

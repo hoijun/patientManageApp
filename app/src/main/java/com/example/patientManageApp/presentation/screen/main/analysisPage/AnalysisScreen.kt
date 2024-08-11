@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import com.example.patientManageApp.presentation.BackOnPressed
 import com.example.patientManageApp.R
 import com.example.patientManageApp.presentation.ScreenHeader
+import com.example.patientManageApp.presentation.screen.main.MainViewModel
 import com.example.patientManageApp.presentation.screen.main.calendarPage.MonthHeader
 import com.kizitonwose.calendar.core.nextMonth
 import com.kizitonwose.calendar.core.previousMonth
@@ -51,7 +52,7 @@ import com.patrykandpatrick.vico.core.entry.entryOf
 import java.time.LocalDate
 
 @Composable
-fun AnalysisScreen() {
+fun AnalysisScreen(mainViewModel: MainViewModel) {
     BackOnPressed()
 
     var currentMonth by remember { mutableStateOf(LocalDate.now().yearMonth) }
