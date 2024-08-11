@@ -122,6 +122,7 @@ private fun CalendarScreen(
 
     LaunchedEffect(calendarState.firstVisibleMonth.yearMonth) {
         if (isMoveBottomNavi) {
+            thisMonth = LocalDate.now().yearMonth
             selectedDate =
                 if (calendarState.firstVisibleMonth.yearMonth == YearMonth.from(thisMonth)) {
                     LocalDate.now()
@@ -140,13 +141,11 @@ private fun CalendarScreen(
             calendarState.firstVisibleMonth.yearMonth,
             onLeftClick = {
                 coroutineScope.launch {
-                    thisMonth = LocalDate.now().yearMonth
                     calendarState.scrollToMonth(calendarState.firstVisibleMonth.yearMonth.previousMonth)
                 }
             },
             onRightClick = {
                 coroutineScope.launch {
-                    thisMonth = LocalDate.now().yearMonth
                     calendarState.scrollToMonth(calendarState.firstVisibleMonth.yearMonth.nextMonth)
                 }
             }
