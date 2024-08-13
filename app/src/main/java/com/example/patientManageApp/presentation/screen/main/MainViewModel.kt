@@ -3,6 +3,7 @@ package com.example.patientManageApp.presentation.screen.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.patientManageApp.domain.entity.CameraEntity
+import com.example.patientManageApp.domain.entity.OccurrencesEntity
 import com.example.patientManageApp.domain.entity.PatientEntity
 import com.example.patientManageApp.domain.entity.UserEntity
 import com.example.patientManageApp.domain.usecase.UseCases
@@ -29,12 +30,15 @@ class MainViewModel@Inject constructor(private val useCases: UseCases): ViewMode
     private val _cameraData = MutableStateFlow<List<CameraEntity>>(emptyList())
     val cameraData = _cameraData.asStateFlow()
 
+    var occurrenceData = HashMap<String, List<OccurrencesEntity>>()
+
     fun getUserData() {
         viewModelScope.launch(Dispatchers.IO) {
             isLoading()
             val userResult = CompletableDeferred<Boolean>()
             val patientResult = CompletableDeferred<Boolean>()
             val cameraResult = CompletableDeferred<Boolean>()
+            val occurrenceResult = CompletableDeferred<Boolean>()
 
             useCases.getUserData().getResult(
                 success = {
@@ -69,7 +73,18 @@ class MainViewModel@Inject constructor(private val useCases: UseCases): ViewMode
                 }
             )
 
-            if (!userResult.await() && !patientResult.await() && !cameraResult.await()) {
+            useCases.getOccurrenceData().getResult(
+                success = {
+                    occurrenceData = it.data
+                    occurrenceResult.complete(true)
+                },
+                error = {
+                    occurrenceData = hashMapOf()
+                    occurrenceResult.complete(false)
+                }
+            )
+
+            if (!userResult.await() && !patientResult.await() && !cameraResult.await() && !occurrenceResult.await()) {
                 isError()
             } else {
                 isSuccess()

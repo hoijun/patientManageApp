@@ -1,6 +1,7 @@
 package com.example.patientManageApp.domain.repository
 
 import com.example.patientManageApp.domain.entity.CameraEntity
+import com.example.patientManageApp.domain.entity.OccurrencesEntity
 import com.example.patientManageApp.domain.entity.PatientEntity
 import com.example.patientManageApp.domain.entity.UserEntity
 import com.example.patientManageApp.domain.utils.FirebaseApiResult
@@ -13,5 +14,6 @@ interface FirebaseRepository {
     suspend fun removeUserData(): FirebaseApiResult<Boolean>
     suspend fun updateCameraData(cameraEntities: List<CameraEntity>): FirebaseApiResult<Boolean>
     suspend fun getCameraData(): FirebaseApiResult<List<CameraEntity>>
+    suspend fun getOccurrenceData(): FirebaseApiResult<HashMap<String, List<OccurrencesEntity>>>
     suspend fun updateAgreeTermOfService(): FirebaseApiResult<Boolean>
 }

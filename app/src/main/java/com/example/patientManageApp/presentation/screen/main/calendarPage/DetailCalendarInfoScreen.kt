@@ -48,11 +48,12 @@ fun DetailCalendarInfoScreen(navController: NavHostController, dateAndTime: Stri
     val backPressedState by remember { mutableStateOf(true) }
     val date = dateAndTime.split("/")[0]
     val time = dateAndTime.split("/")[1]
+    val kind = dateAndTime.split("/")[2]
     BackHandler(enabled = backPressedState) {
         moveScreenWithArgs(navController, "${AppScreen.Calendar.route}/${Uri.encode(dateConvert(date))}")
     }
 
-    DetailCalendarInfoScreen(date, time) {
+    DetailCalendarInfoScreen(date, time, kind) {
         moveScreenWithArgs(navController, "${AppScreen.Calendar.route}/${Uri.encode(dateConvert(date))}")
     }
 }
@@ -61,6 +62,7 @@ fun DetailCalendarInfoScreen(navController: NavHostController, dateAndTime: Stri
 private fun DetailCalendarInfoScreen(
     date: String,
     time : String,
+    kind : String,
     onBackBtnClick: () -> Unit) {
     Column {
         SubScreenHeader(pageName = "이상 행동 기록") {
@@ -92,7 +94,7 @@ private fun DetailCalendarInfoScreen(
         CustomDivider(horizontal = 0.dp, vertical = 0.dp)
 
         TimeField(time)
-        KindField("낙상")
+        KindField(kind)
     }
 }
 
@@ -191,5 +193,5 @@ private fun dateConvert(date: String): String {
 @Preview(showBackground = true)
 @Composable
 private fun DetailCalendarInfoScreenPreview() {
-    DetailCalendarInfoScreen("2024년 08월 14일", "14:30") { }
+    DetailCalendarInfoScreen("2024년 08월 14일", "14:30:23", "낙상") { }
 }

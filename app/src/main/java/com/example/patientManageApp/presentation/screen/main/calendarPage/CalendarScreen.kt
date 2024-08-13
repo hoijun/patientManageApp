@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -29,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.patientManageApp.R
+import com.example.patientManageApp.domain.entity.OccurrencesEntity
 import com.example.patientManageApp.presentation.AppScreen
 import com.example.patientManageApp.presentation.BackOnPressed
 import com.example.patientManageApp.presentation.CustomDivider
@@ -60,12 +62,7 @@ fun CalendarScreen(navController: NavHostController, date: String = "bottom", ma
     val daysOfWeek = daysOfWeek(firstDayOfWeek = DayOfWeek.SUNDAY)
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     var isMoveBottom by remember { mutableStateOf(date == "bottom") }
-
-    val occurrenceDays = hashMapOf(
-        "2024-08-14" to listOf("09:00", "14:30", "18:00"),
-        "2024-08-15" to listOf("10:00", "15:30"),
-        "2024-07-20" to listOf("11:00", "16:30", "19:00")
-    )
+    val occurrenceDays = mainViewModel.occurrenceData
 
     CalendarScreen(
         isMoveBottom = isMoveBottom,
@@ -84,7 +81,7 @@ fun CalendarScreen(navController: NavHostController, date: String = "bottom", ma
 @Composable
 private fun CalendarScreen(
     isMoveBottom: Boolean,
-    occurrenceDays: HashMap<String, List<String>>,
+    occurrenceDays: HashMap<String, List<OccurrencesEntity>>,
     selectedDay: LocalDate,
     currentMonth: YearMonth,
     daysOfWeek: List<DayOfWeek>,
@@ -190,7 +187,7 @@ private fun CalendarScreen(
 }
 
 @Composable
-private fun OccurrencesColumn(occurrences: List<String>, onItemClick: (time: String) -> Unit) {
+private fun OccurrencesColumn(occurrences: List<OccurrencesEntity>, onItemClick: (time: String) -> Unit) {
     if (occurrences.isEmpty()) {
         Box(
             modifier = Modifier
@@ -214,9 +211,9 @@ private fun OccurrencesColumn(occurrences: List<String>, onItemClick: (time: Str
             key = { it }
         ) {
             Row(modifier = Modifier.noRippleClickable {
-                onItemClick(occurrences[it])
+                onItemClick(occurrences[it].time + "/" + occurrences[it].kind)
             }) {
-                var iconHeight by remember { mutableStateOf(0f) }
+                var iconHeight by remember { mutableFloatStateOf(0f) }
                 Icon(painter = painterResource(id = R.drawable.time),
                     contentDescription = "time",
                     modifier = Modifier.onGloballyPositioned {
@@ -225,8 +222,8 @@ private fun OccurrencesColumn(occurrences: List<String>, onItemClick: (time: Str
                 )
                 CustomVerticalDivider(iconHeight = iconHeight)
                 Column(modifier = Modifier.padding(start = 10.dp)) {
-                    Text(text = occurrences[it], fontSize = 13.sp)
-                    Text(text = "낙상", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                    Text(text = occurrences[it].time, fontSize = 13.sp)
+                    Text(text = occurrences[it].kind, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -237,9 +234,19 @@ private fun OccurrencesColumn(occurrences: List<String>, onItemClick: (time: Str
 @Composable
 private fun CalendarScreenPreview() {
     val occurrenceDays = hashMapOf(
-        "2024-08-14" to listOf("09:00", "14:30", "18:00"),
-        "2024-08-15" to listOf("10:00", "15:30"),
-        "2024-07-20" to listOf("11:00", "16:30", "19:00")
+        "2024-08-14" to listOf(
+            OccurrencesEntity("09:00:24", "낙상"),
+            OccurrencesEntity("10:00:53", "식사"),
+            OccurrencesEntity("23:00:23", "낙상")
+        ),
+        "2024-08-15" to listOf(
+            OccurrencesEntity("11:00:24", "낙상"),
+            OccurrencesEntity("21:00:53", "낙상")
+        ),
+        "2024-07-15" to listOf(
+            OccurrencesEntity("09:00:34", "낙상"),
+            OccurrencesEntity("20:00:43", "낙상")
+        )
     )
 
     CalendarScreen(

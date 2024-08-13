@@ -1,15 +1,20 @@
 package com.example.patientManageApp.data
 
-import androidx.compose.ui.util.trace
+import android.util.Log
 import com.example.patientManageApp.domain.entity.CameraEntity
+import com.example.patientManageApp.domain.entity.OccurrencesEntity
 import com.example.patientManageApp.domain.entity.PatientEntity
 import com.example.patientManageApp.domain.entity.UserEntity
 import com.example.patientManageApp.domain.repository.FirebaseRepository
 import com.example.patientManageApp.domain.utils.FirebaseApiResult
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.GenericTypeIndicator
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -68,6 +73,41 @@ class FirebaseRepositoryImpl @Inject constructor(private val db: FirebaseDatabas
             db.getReference("Users").child(Firebase.auth.currentUser!!.uid).child("CameraData")
                 .get().await().getValue(object : GenericTypeIndicator<List<CameraEntity>>() {}) ?: emptyList()
         FirebaseApiResult.Success(cameraEntities)
+    } catch (e: Exception) {
+        FirebaseApiResult.Error(e)
+    }
+
+    override suspend fun getOccurrenceData(): FirebaseApiResult<HashMap<String, List<OccurrencesEntity>>> = try {
+        val isSuccess = CompletableDeferred<Boolean>()
+        val occurrenceEntitiesMap = hashMapOf<String, List<OccurrencesEntity>>()
+        db.getReference("Users").child(Firebase.auth.currentUser!!.uid).child("OccurrenceData")
+            .addValueEventListener(
+                object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        for(dateData in snapshot.children) {
+                            val date = dateData.key ?: "0000-00-00"
+                            val occurrencesEntities = mutableListOf<OccurrencesEntity>()
+                            for (timeData in dateData.children) {
+                                val time = timeData.key ?: "00:00:00"
+                                val kind = timeData.child("kind").getValue(String::class.java) ?: ""
+
+                                occurrencesEntities.add(OccurrencesEntity(time, kind))
+                            }
+                            occurrenceEntitiesMap[date] = occurrencesEntities
+                        }
+                        isSuccess.complete(true)
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        isSuccess.complete(false)
+                    }
+                })
+        if (isSuccess.await()) {
+            Log.d("savepoint", "getOccurrenceData: $occurrenceEntitiesMap")
+            FirebaseApiResult.Success(occurrenceEntitiesMap)
+        } else {
+            throw Exception()
+        }
     } catch (e: Exception) {
         FirebaseApiResult.Error(e)
     }

@@ -1,6 +1,5 @@
 package com.example.patientManageApp.presentation.screen.main.analysisPage
 
-import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.patientManageApp.presentation.BackOnPressed
 import com.example.patientManageApp.R
+import com.example.patientManageApp.domain.entity.OccurrencesEntity
 import com.example.patientManageApp.presentation.CustomDivider
 import com.example.patientManageApp.presentation.CustomVerticalDivider
 import com.example.patientManageApp.presentation.ScreenHeader
@@ -62,11 +63,7 @@ fun AnalysisScreen(mainViewModel: MainViewModel) {
     var currentMonth by remember { mutableStateOf(LocalDate.now().yearMonth) }
     val previousMonth by remember(currentMonth) { mutableStateOf(currentMonth.minusMonths(1)) }
 
-    val occurrenceDays = hashMapOf(
-        "2024-08-14" to listOf("09:00", "14:30", "18:00"),
-        "2024-08-15" to listOf("10:00", "15:30"),
-        "2024-07-20" to listOf("11:00", "16:30", "19:00")
-    )
+    val occurrenceDays = mainViewModel.occurrenceData
 
     val groupByMonth = occurrenceDays.entries.groupBy {
         val date = LocalDate.parse(it.key)
@@ -102,7 +99,7 @@ private fun AnalysisScreen(
     currentMonth: YearMonth,
     currentMonthOccurrenceCount: Int,
     previousMonthOccurrenceCount: Int,
-    groupByWeekOfMonth: Map<String, List<MutableMap.MutableEntry<String, List<String>>>>,
+    groupByWeekOfMonth: Map<String, List<MutableMap.MutableEntry<String, List<OccurrencesEntity>>>>,
     onLeftClick: () -> Unit,
     onRightClick: () -> Unit
 ) {
@@ -131,20 +128,21 @@ private fun AnalysisScreen(
 
 @Composable
 private fun AnalysisChart(
-    groupByWeekOfMonth: Map<String, List<MutableMap.MutableEntry<String, List<String>>>>,
+    groupByWeekOfMonth: Map<String, List<MutableMap.MutableEntry<String, List<OccurrencesEntity>>>>,
     month: YearMonth
 ) {
-    val chartEntryModelProducer by remember(month) {
-        mutableStateOf(
-            ChartEntryModelProducer(
-                listOf(
-                    entryOf(x = 0f, y = getOccurrenceCount(groupByWeekOfMonth["$month-1"] ?: emptyList()).toFloat()),
-                    entryOf(x = 1f, y = getOccurrenceCount(groupByWeekOfMonth["$month-2"] ?: emptyList()).toFloat()),
-                    entryOf(x = 2f, y = getOccurrenceCount(groupByWeekOfMonth["$month-3"] ?: emptyList()).toFloat()),
-                    entryOf(x = 3f, y = getOccurrenceCount(groupByWeekOfMonth["$month-4"] ?: emptyList()).toFloat())
-                )
+    val chartEntryModelProducer = remember {
+        ChartEntryModelProducer()
+    }
+
+    LaunchedEffect(month) {
+        val entries = (1..5).map { week ->
+            entryOf(
+                x = (week - 1).toFloat(),
+                y = getOccurrenceCount(groupByWeekOfMonth["$month-$week"] ?: emptyList()).toFloat()
             )
-        )
+        }
+        chartEntryModelProducer.setEntries(entries)
     }
 
     Chart(
@@ -174,17 +172,17 @@ private fun AnalysisChart(
         ),
         topAxis = rememberTopAxis(
             valueFormatter = { value, _ ->
-                val xAxisLabelData = listOf("1주", "2주", "3주", "4주")
-                (xAxisLabelData[value.toInt()])
+                val xAxisLabelData = listOf("1주", "2주", "3주", "4주", "5주")
+                xAxisLabelData[value.toInt()]
             }
         ),
         bottomAxis = rememberBottomAxis(
             valueFormatter = { value, _ ->
-                val xAxisLabelData = listOf("1주", "2주", "3주", "4주")
-                (xAxisLabelData[value.toInt()])
+                val xAxisLabelData = listOf("1주", "2주", "3주", "4주", "5주")
+                xAxisLabelData[value.toInt()]
             }
         ),
-        runInitialAnimation = false
+        runInitialAnimation = true
     )
 }
 
@@ -236,7 +234,7 @@ private fun SetAnalysisScreenInfo(icon: Int, count: String, increment: String) {
     }
 }
 
-private fun getOccurrenceCount(occurrenceList: List<MutableMap.MutableEntry<String, List<String>>>): Int {
+private fun getOccurrenceCount(occurrenceList: List<MutableMap.MutableEntry<String, List<OccurrencesEntity>>>): Int {
     var count = 0
     occurrenceList.forEach {
         count += it.value.size
@@ -249,9 +247,19 @@ private fun getOccurrenceCount(occurrenceList: List<MutableMap.MutableEntry<Stri
 @Composable
 private fun AnalysisScreenPreview() {
     val occurrenceDays = hashMapOf(
-        "2024-08-14" to listOf("09:00", "14:30", "18:00"),
-        "2024-08-15" to listOf("10:00", "15:30"),
-        "2024-07-20" to listOf("11:00", "16:30", "19:00")
+        "2024-08-14" to listOf(
+            OccurrencesEntity("09:00:24", "낙상"),
+            OccurrencesEntity("10:00:53", "식사"),
+            OccurrencesEntity("23:00:23", "낙상")
+        ),
+        "2024-08-24" to listOf(
+            OccurrencesEntity("11:00:24", "낙상"),
+            OccurrencesEntity("21:00:53", "낙상")
+        ),
+        "2024-07-15" to listOf(
+            OccurrencesEntity("09:00:34", "낙상"),
+            OccurrencesEntity("20:00:43", "낙상")
+        )
     )
 
     val groupByMonth = occurrenceDays.entries.groupBy {

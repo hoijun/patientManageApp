@@ -8,5 +8,6 @@ data class UseCases(
     val removeUserData: RemoveUserData,
     val updateCameraData: UpdateCameraData,
     val getCameraData: GetCameraData,
+    val getOccurrenceData: GetOccurrenceData,
     val updateAgreeTermOfService: UpdateAgreeTermOfService
 )
