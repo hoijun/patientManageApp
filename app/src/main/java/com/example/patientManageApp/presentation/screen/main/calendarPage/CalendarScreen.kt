@@ -10,6 +10,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +28,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -52,10 +63,19 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun CalendarScreen(navController: NavHostController, date: String = "bottom", mainViewModel: MainViewModel) {
     BackOnPressed()
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullRefreshState(
+        refreshing = isRefreshing,
+        onRefresh = {
+            mainViewModel.getUserData()
+            isRefreshing = false
+        },
+    )
 
     val currentMonth = if (date == "bottom") YearMonth.now() else LocalDate.parse(date).yearMonth
     val selectedDay = if (date == "bottom") LocalDate.now() else LocalDate.parse(date)
@@ -64,18 +84,35 @@ fun CalendarScreen(navController: NavHostController, date: String = "bottom", ma
     var isMoveBottom by remember { mutableStateOf(date == "bottom") }
     val occurrenceDays = mainViewModel.occurrenceData
 
-    CalendarScreen(
-        isMoveBottom = isMoveBottom,
-        occurrenceDays = occurrenceDays,
-        selectedDay = selectedDay,
-        currentMonth = currentMonth,
-        daysOfWeek = daysOfWeek,
-        formatter = formatter,
-        onItemClick = {
-            isMoveBottom = false
-            moveScreenWithArgs(navController, "${AppScreen.DetailCalendarInfo.route}/${Uri.encode(it)}")
-        }
-    )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pullRefresh(pullToRefreshState)
+    ) {
+        CalendarScreen(
+            isMoveBottom = isMoveBottom,
+            occurrenceDays = occurrenceDays,
+            selectedDay = selectedDay,
+            currentMonth = currentMonth,
+            daysOfWeek = daysOfWeek,
+            formatter = formatter,
+            onItemClick = {
+                isMoveBottom = false
+                moveScreenWithArgs(
+                    navController,
+                    "${AppScreen.DetailCalendarInfo.route}/${Uri.encode(it)}"
+                )
+            }
+        )
+
+        PullRefreshIndicator(
+            refreshing = isRefreshing,
+            state = pullToRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter),
+            backgroundColor = Color.White,
+            contentColor = Color.Black
+        )
+    }
 }
 
 @Composable
@@ -131,7 +168,9 @@ private fun CalendarScreen(
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize()
+        .verticalScroll(rememberScrollState())
+    ) {
         ScreenHeader(pageName = "이상 행동 달력")
 
         MonthHeader(
@@ -166,7 +205,8 @@ private fun CalendarScreen(
                     modifier = Modifier.padding(bottom = 10.dp),
                     daysOfWeek = daysOfWeek
                 )
-            }
+            },
+            userScrollEnabled = false
         )
 
         CustomDivider(horizontal = 0.dp, vertical = 0.dp)
@@ -179,6 +219,8 @@ private fun CalendarScreen(
         )
 
         OccurrencesColumn(
+            modifier = Modifier
+                .weight(1f),
             occurrences = occurrenceDays[selectedDate.format(formatter)] ?: emptyList()
         ) {
             onItemClick((selectedDate.format(koreanDateFormatter) ?: "") + "/" + it)
@@ -187,10 +229,10 @@ private fun CalendarScreen(
 }
 
 @Composable
-private fun OccurrencesColumn(occurrences: List<OccurrencesEntity>, onItemClick: (time: String) -> Unit) {
+private fun OccurrencesColumn(modifier: Modifier, occurrences: List<OccurrencesEntity>, onItemClick: (time: String) -> Unit) {
     if (occurrences.isEmpty()) {
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
         ) {
             Text(
@@ -200,30 +242,36 @@ private fun OccurrencesColumn(occurrences: List<OccurrencesEntity>, onItemClick:
                 modifier = Modifier.align(Alignment.Center)
             )
         }
-    }
-    LazyColumn(
-        modifier = Modifier.padding(top = 20.dp, start = 25.dp, bottom = 2.5.dp),
-        contentPadding = PaddingValues(top = 5.dp),
-        verticalArrangement = Arrangement.spacedBy(40.dp)
-    ) {
-        items(
-            occurrences.size,
-            key = { it }
+    } else {
+        LazyColumn(
+            modifier = modifier
+                .padding(top = 20.dp, start = 25.dp, bottom = 2.5.dp),
+            contentPadding = PaddingValues(top = 5.dp),
+            verticalArrangement = Arrangement.spacedBy(40.dp)
         ) {
-            Row(modifier = Modifier.noRippleClickable {
-                onItemClick(occurrences[it].time + "/" + occurrences[it].kind)
-            }) {
-                var iconHeight by remember { mutableFloatStateOf(0f) }
-                Icon(painter = painterResource(id = R.drawable.time),
-                    contentDescription = "time",
-                    modifier = Modifier.onGloballyPositioned {
-                        iconHeight = it.size.height.toFloat()
+            items(
+                occurrences.size,
+                key = { it }
+            ) {
+                Row(modifier = Modifier.noRippleClickable {
+                    onItemClick(occurrences[it].time + "/" + occurrences[it].kind)
+                }) {
+                    var iconHeight by remember { mutableFloatStateOf(0f) }
+                    Icon(painter = painterResource(id = R.drawable.time),
+                        contentDescription = "time",
+                        modifier = Modifier.onGloballyPositioned {
+                            iconHeight = it.size.height.toFloat()
+                        }
+                    )
+                    CustomVerticalDivider(iconHeight = iconHeight)
+                    Column(modifier = Modifier.padding(start = 10.dp)) {
+                        Text(text = occurrences[it].time, fontSize = 13.sp)
+                        Text(
+                            text = occurrences[it].kind,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
-                )
-                CustomVerticalDivider(iconHeight = iconHeight)
-                Column(modifier = Modifier.padding(start = 10.dp)) {
-                    Text(text = occurrences[it].time, fontSize = 13.sp)
-                    Text(text = occurrences[it].kind, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -237,9 +285,12 @@ private fun CalendarScreenPreview() {
         "2024-08-14" to listOf(
             OccurrencesEntity("09:00:24", "낙상"),
             OccurrencesEntity("10:00:53", "식사"),
-            OccurrencesEntity("23:00:23", "낙상")
+            OccurrencesEntity("23:00:23", "낙상"),
+            OccurrencesEntity("09:00:24", "낙상"),
+            OccurrencesEntity("23:00:23", "낙상"),
+            OccurrencesEntity("09:00:24", "낙상")
         ),
-        "2024-08-15" to listOf(
+        "2024-08-13" to listOf(
             OccurrencesEntity("11:00:24", "낙상"),
             OccurrencesEntity("21:00:53", "낙상")
         ),

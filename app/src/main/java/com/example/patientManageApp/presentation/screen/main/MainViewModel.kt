@@ -115,4 +115,8 @@ class MainViewModel@Inject constructor(private val useCases: UseCases): ViewMode
     private fun isSuccess() {
         _mainUiState.value = MainUiState.Success
     }
+
+    fun isIdle() {
+        _mainUiState.value = MainUiState.Idle
+    }
 }

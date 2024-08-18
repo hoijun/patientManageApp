@@ -1,13 +1,22 @@
 package com.example.patientManageApp.presentation.screen.main.analysisPage
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,9 +37,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.patientManageApp.presentation.BackOnPressed
 import com.example.patientManageApp.R
 import com.example.patientManageApp.domain.entity.OccurrencesEntity
+import com.example.patientManageApp.presentation.BackOnPressed
 import com.example.patientManageApp.presentation.CustomDivider
 import com.example.patientManageApp.presentation.CustomVerticalDivider
 import com.example.patientManageApp.presentation.ScreenHeader
@@ -56,9 +65,19 @@ import java.time.LocalDate
 import java.time.YearMonth
 import kotlin.math.ceil
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun AnalysisScreen(mainViewModel: MainViewModel) {
     BackOnPressed()
+
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullRefreshState(
+        refreshing = isRefreshing,
+        onRefresh = {
+            isRefreshing = true
+            mainViewModel.getUserData()
+        },
+    )
 
     var currentMonth by remember { mutableStateOf(LocalDate.now().yearMonth) }
     val previousMonth by remember(currentMonth) { mutableStateOf(currentMonth.minusMonths(1)) }
@@ -75,23 +94,36 @@ fun AnalysisScreen(mainViewModel: MainViewModel) {
         val weekOfMonth = ceil(date.dayOfMonth.toDouble() / 7).toInt()
         "${date.year}-${date.monthValue.toString().padStart(2, '0')}-$weekOfMonth"
     }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pullRefresh(pullToRefreshState)
+    ) {
+        AnalysisScreen(
+            currentMonth = currentMonth,
+            currentMonthOccurrenceCount = getOccurrenceCount(
+                groupByMonth[currentMonth.toString()] ?: emptyList()
+            ),
+            previousMonthOccurrenceCount = getOccurrenceCount(
+                groupByMonth[previousMonth.toString()] ?: emptyList()
+            ),
+            groupByWeekOfMonth = groupByWeekOfMonth,
+            onLeftClick = {
+                currentMonth = currentMonth.previousMonth
+            },
+            onRightClick = {
+                currentMonth = currentMonth.nextMonth
+            }
+        )
 
-    AnalysisScreen(
-        currentMonth = currentMonth,
-        currentMonthOccurrenceCount = getOccurrenceCount(
-            groupByMonth[currentMonth.toString()] ?: emptyList()
-        ),
-        previousMonthOccurrenceCount = getOccurrenceCount(
-            groupByMonth[previousMonth.toString()] ?: emptyList()
-        ),
-        groupByWeekOfMonth = groupByWeekOfMonth,
-        onLeftClick = {
-            currentMonth = currentMonth.previousMonth
-        },
-        onRightClick = {
-            currentMonth = currentMonth.nextMonth
-        }
-    )
+        PullRefreshIndicator(
+            refreshing = isRefreshing,
+            state = pullToRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter),
+            backgroundColor = Color.White,
+            contentColor = Color.Black
+        )
+    }
 }
 
 @Composable
@@ -103,7 +135,8 @@ private fun AnalysisScreen(
     onLeftClick: () -> Unit,
     onRightClick: () -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize()
+        .verticalScroll(rememberScrollState())) {
         ScreenHeader(pageName = "이상 행동 통계")
 
         MonthHeader(month = currentMonth,
@@ -148,7 +181,7 @@ private fun AnalysisChart(
     Chart(
         modifier = Modifier
             .padding(horizontal = 20.dp, vertical = 5.dp)
-            .fillMaxHeight(0.5f),
+            .heightIn(320.dp, 350.dp),
         chart = columnChart(
             columns = listOf(
                 lineComponent(
@@ -182,7 +215,8 @@ private fun AnalysisChart(
                 xAxisLabelData[value.toInt()]
             }
         ),
-        runInitialAnimation = true
+        runInitialAnimation = true,
+        isZoomEnabled = false
     )
 }
 

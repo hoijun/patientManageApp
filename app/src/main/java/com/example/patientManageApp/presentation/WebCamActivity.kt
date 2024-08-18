@@ -10,10 +10,6 @@ import androidx.activity.enableEdgeToEdge
 import com.example.patientManageApp.presentation.theme.PatientManageAppTheme
 import com.example.patientManageApp.presentation.screen.webCamPage.WebCamScreen
 
-enum class PlayerState {
-    INITIALIZING, BUFFERING, READY, ERROR, ENDED
-}
-
 class WebCamActivity : ComponentActivity() {
 
     private val onBackPressed = {
@@ -30,9 +26,10 @@ class WebCamActivity : ComponentActivity() {
         window.insetsController?.hide(WindowInsets.Type.statusBars())
         window.insetsController?.hide(WindowInsets.Type.navigationBars())
         window.insetsController?.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        val rtspUrl = intent.getStringExtra("rtspAddress") ?: ""
         setContent {
             PatientManageAppTheme {
-                WebCamScreen("rtsp://admin:admin@58.236.195.147:1936", onBackPressed)
+                WebCamScreen(rtspUrl, onBackPressed)
             }
         }
     }

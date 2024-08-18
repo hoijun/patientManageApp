@@ -315,8 +315,7 @@ private fun SaveButton(enabled: Boolean, onClick: () -> Unit) {
 }
 
 private fun isValidRtspAddress(address: String): Boolean {
-    val rtspRegex = """^rtsp://(?:(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*(?:[A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])(?::\d+)?(?:/[\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?$""".toRegex()
-    return rtspRegex.matches(address)
+    return address.startsWith("rtsp://")
 }
 
 private fun checkDuplicateCamera(

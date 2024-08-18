@@ -7,16 +7,22 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
@@ -39,6 +45,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 private fun Main() {
@@ -46,11 +53,19 @@ private fun Main() {
     val mainViewModel: MainViewModel = hiltViewModel()
     val mainUiState by mainViewModel.mainUiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
+    val refreshState = rememberPullToRefreshState()
 
-    when(mainUiState) {
+    if (refreshState.isRefreshing) {
+        mainViewModel.isIdle()
+        refreshState.endRefresh()
+    }
+
+    when (mainUiState) {
         is MainUiState.Error -> {
             Scaffold(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .nestedScroll(refreshState.nestedScrollConnection),
                 snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
             ) {
                 LaunchedEffect(snackBarHostState) {
@@ -72,12 +87,25 @@ private fun Main() {
         }
 
         MainUiState.Success -> {
-            Scaffold(modifier = Modifier.fillMaxSize(), bottomBar = {
-                MainBottomNavigation(navController = navController)
-            })
-            {
+            Scaffold(modifier = Modifier
+                .fillMaxSize(),
+                bottomBar = {
+                    MainBottomNavigation(navController = navController)
+                }
+            ) {
                 Box(modifier = Modifier.padding(bottom = it.calculateBottomPadding())) {
-                    MainNavHost(navController = navController, startDestination = AppScreen.Home.route, mainViewModel)
+                    MainNavHost(
+                        navController = navController,
+                        startDestination = AppScreen.Home.route,
+                        mainViewModel
+                    )
+
+                    PullToRefreshContainer(
+                        state = refreshState,
+                        containerColor = Color.White,
+                        contentColor = Color.Black,
+                        modifier = Modifier.align(Alignment.TopCenter)
+                    )
                 }
             }
         }

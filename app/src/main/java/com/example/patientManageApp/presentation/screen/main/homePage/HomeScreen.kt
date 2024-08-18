@@ -188,8 +188,10 @@ private fun CameraItem(cameraList: List<CameraEntity>, onSettingBtnClick: (camer
                             modifier = Modifier
                                 .align(Alignment.Center)
                                 .noRippleClickable {
-                                    val intent = Intent(context, WebCamActivity::class.java)
-                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                    val intent = Intent(context, WebCamActivity::class.java).apply {
+                                        putExtra("rtspAddress", cameraList[cameraList.indexOf(it)].rtspAddress)
+                                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                    }
                                     context.startActivity(intent)
                                 }
                         )
