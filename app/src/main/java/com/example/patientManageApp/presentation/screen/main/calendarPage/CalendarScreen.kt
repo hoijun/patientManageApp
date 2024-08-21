@@ -142,7 +142,7 @@ private fun CalendarScreen(
         mutableStateOf(
             occurrenceDays.keys
                 .map { LocalDate.parse(it, formatter) }
-                .filter { it.month == calendarState.firstVisibleMonth.yearMonth.month }
+                .filter { it.yearMonth == calendarState.firstVisibleMonth.yearMonth }
                 .map { it.dayOfYear }
                 .sorted()
         )

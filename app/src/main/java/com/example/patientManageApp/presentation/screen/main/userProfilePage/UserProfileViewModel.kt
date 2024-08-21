@@ -41,8 +41,6 @@ class UserProfileViewModel@Inject constructor(private val useCase: UseCases): Vi
             return@launch
         }
 
-        Log.d("savepoint", email)
-
         try {
             if (email.contains("naver.com")) {
                 NaverIdLoginSDK.logout()

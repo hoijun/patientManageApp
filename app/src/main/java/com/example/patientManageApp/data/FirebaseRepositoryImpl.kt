@@ -103,7 +103,6 @@ class FirebaseRepositoryImpl @Inject constructor(private val db: FirebaseDatabas
                     }
                 })
         if (isSuccess.await()) {
-            Log.d("savepoint", "getOccurrenceData: $occurrenceEntitiesMap")
             FirebaseApiResult.Success(occurrenceEntitiesMap)
         } else {
             throw Exception()

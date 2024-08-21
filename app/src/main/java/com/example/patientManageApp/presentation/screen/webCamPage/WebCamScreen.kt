@@ -1,14 +1,18 @@
 package com.example.patientManageApp.presentation.screen.webCamPage
 
 import android.net.Uri
+import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -46,6 +51,9 @@ import kotlinx.coroutines.launch
 @OptIn(UnstableApi::class)
 @Composable
 fun WebCamScreen(rtspUrl: String, onBackPressed: () -> Unit) {
+    BackHandler(true) {
+        onBackPressed()
+    }
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -109,7 +117,7 @@ fun WebCamScreen(rtspUrl: String, onBackPressed: () -> Unit) {
 
 @OptIn(UnstableApi::class)
 @Composable
-private fun CamScreen(playerState: PlayerState, exoPlayer: ExoPlayer, errorMessage: String?, onBackPressed: () -> Unit) {
+private fun CamScreen(playerState: PlayerState, exoPlayer: ExoPlayer?, errorMessage: String?, onBackPressed: () -> Unit) {
     Box(modifier = Modifier
         .fillMaxSize()
         .background(Color.Black))
@@ -137,17 +145,25 @@ private fun CamScreen(playerState: PlayerState, exoPlayer: ExoPlayer, errorMessa
 
             PlayerState.ERROR -> {
                 Column(
-                    modifier = Modifier.align(Alignment.Center),
+                    modifier = Modifier.align(Alignment.Center)
+                        .background(Color.White)
+                        .fillMaxWidth(0.6f)
+                        .padding(30.dp)
+                        .rotate(180f),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("오류 발생")
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(errorMessage ?: "알 수 없는 오류")
+                    Text("오류 발생", color = Color.Red)
+                    Spacer(modifier = Modifier
+                        .height(8.dp))
+                    Text(errorMessage ?: "알 수 없는 오류", color = Color.Red)
                 }
             }
 
             PlayerState.ENDED -> {
-                Text("재생 종료", modifier = Modifier.align(Alignment.Center))
+                Text("재생 종료",
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .rotate(180f))
             }
         }
 
@@ -175,5 +191,13 @@ private fun CamScreen(playerState: PlayerState, exoPlayer: ExoPlayer, errorMessa
                 .padding(bottom = 20.dp)
                 .rotate(180f)
         )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun WebCamPreview() {
+    CamScreen(playerState = PlayerState.ERROR, exoPlayer = null, errorMessage = "dkdkdk") {
+
     }
 }

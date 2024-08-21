@@ -1,5 +1,6 @@
 package com.example.patientManageApp.presentation.screen.main.calendarPage
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
