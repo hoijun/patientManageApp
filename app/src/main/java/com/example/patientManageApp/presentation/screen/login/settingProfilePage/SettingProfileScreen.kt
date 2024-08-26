@@ -82,7 +82,6 @@ fun SettingProfileProfile(loginSns: String?, viewModel: SettingProfileViewModel 
                         duration = SnackbarDuration.Short
                     )
                 }
-
             }
 
             SettingProfileUiState.Loading -> {

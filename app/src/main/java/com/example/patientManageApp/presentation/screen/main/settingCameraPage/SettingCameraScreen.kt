@@ -49,7 +49,7 @@ import com.example.patientManageApp.domain.entity.CameraEntity
 import com.example.patientManageApp.presentation.AppScreen
 import com.example.patientManageApp.presentation.CustomDivider
 import com.example.patientManageApp.presentation.LoadingDialog
-import com.example.patientManageApp.presentation.RemoveCameraWarningDialog
+import com.example.patientManageApp.presentation.WarningDialog
 import com.example.patientManageApp.presentation.moveScreen
 import com.example.patientManageApp.presentation.noRippleClickable
 import com.example.patientManageApp.presentation.screen.main.MainViewModel
@@ -92,6 +92,7 @@ fun SettingCameraScreen(navController: NavHostController, cameraEntity: CameraEn
                         actionLabel = "닫기",
                         duration = SnackbarDuration.Short
                     )
+                    settingCameraViewModel.isIdle()
                 }
             }
         }
@@ -166,7 +167,7 @@ private fun SettingCameraScreen(
     }
 
     if(isDialogOpen) {
-        RemoveCameraWarningDialog(
+        WarningDialog(
             title = "정말로 삭제하시겠습니까?",
             description = "삭제한 후에는 복구가 불가능합니다.",
             onDismissRequest = { isDialogOpen = false },

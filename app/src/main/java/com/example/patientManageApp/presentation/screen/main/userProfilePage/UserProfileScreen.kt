@@ -89,7 +89,7 @@ fun UserProfileScreen(navController: NavHostController, mainViewModel: MainViewM
         snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
     ) {
         when (userProfileUiState) {
-            UserProfileUiState.Idle -> {}
+            UserProfileUiState.Idle -> { }
 
             UserProfileUiState.Loading -> {
                 LoadingDialog()
@@ -131,6 +131,7 @@ fun UserProfileScreen(navController: NavHostController, mainViewModel: MainViewM
                         actionLabel = "닫기",
                         duration = SnackbarDuration.Short
                     )
+                    userProfileViewModel.isIdle()
                 }
             }
         }

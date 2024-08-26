@@ -16,4 +16,5 @@ interface FirebaseRepository {
     suspend fun getCameraData(): FirebaseApiResult<List<CameraEntity>>
     suspend fun getOccurrenceData(): FirebaseApiResult<HashMap<String, List<OccurrencesEntity>>>
     suspend fun updateAgreeTermOfService(): FirebaseApiResult<Boolean>
+    suspend fun updateFcmToken(token: String): FirebaseApiResult<Boolean>
 }

@@ -351,7 +351,7 @@ fun CustomDivider(horizontal: Dp, vertical: Dp) {
 }
 
 @Composable
-fun RemoveCameraWarningDialog(
+fun WarningDialog(
     title: String,
     description: String,
     onDismissRequest: () -> Unit,
@@ -466,6 +466,7 @@ fun WithdrawalWarningDialog(
                         input = it
                     },
                     modifier = Modifier.padding(top = 10.dp),
+                    singleLine = true,
                     maxLines = 1,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.DarkGray,

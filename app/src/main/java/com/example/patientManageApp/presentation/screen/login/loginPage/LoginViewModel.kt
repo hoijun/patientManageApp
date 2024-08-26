@@ -4,11 +4,17 @@ import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.activity.result.ActivityResult
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.patientManageApp.domain.usecase.UseCases
+import com.example.patientManageApp.domain.utils.onError
+import com.example.patientManageApp.domain.utils.onSuccess
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.messaging.FirebaseMessaging
 import com.kakao.sdk.user.UserApiClient
 import com.navercorp.nid.oauth.NidOAuthLogin
 import com.navercorp.nid.profile.NidProfileCallback
@@ -16,11 +22,12 @@ import com.navercorp.nid.profile.data.NidProfileResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
 @HiltViewModel
-class LoginViewModel @Inject constructor() : ViewModel() {
+class LoginViewModel @Inject constructor(private val useCases: UseCases) : ViewModel() {
     private val _loginUiState  = MutableStateFlow<LoginUiState>(LoginUiState.IDlE)
     val loginUiState = _loginUiState.asStateFlow()
     private var auth: FirebaseAuth = FirebaseAuth.getInstance()
@@ -124,7 +131,29 @@ class LoginViewModel @Inject constructor() : ViewModel() {
     }
 
     private fun loginSuccess() {
-        _loginUiState.value = LoginUiState.SingIn
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                loginFail()
+                return@addOnCompleteListener
+            }
+
+            val token = task.result
+
+            if (token == null) {
+                loginFail()
+                return@addOnCompleteListener
+            }
+
+            viewModelScope.launch {
+                useCases.updateFcmToken(token).onSuccess {
+                    _loginUiState.value = LoginUiState.SingIn
+                }.onError {
+                    loginFail()
+                }
+            }
+        }.addOnFailureListener {
+            loginFail()
+        }
     }
 
     fun loginFail() {

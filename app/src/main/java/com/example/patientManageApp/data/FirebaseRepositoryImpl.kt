@@ -117,4 +117,11 @@ class FirebaseRepositoryImpl @Inject constructor(private val db: FirebaseDatabas
     } catch (e: Exception) {
         FirebaseApiResult.Error(e)
     }
+
+    override suspend fun updateFcmToken(token: String): FirebaseApiResult<Boolean> = try {
+        db.getReference("Users").child(Firebase.auth.currentUser!!.uid).child("fcmToken").setValue(token).await()
+        FirebaseApiResult.Success(true)
+    } catch (e: Exception) {
+        FirebaseApiResult.Error(e)
+    }
 }

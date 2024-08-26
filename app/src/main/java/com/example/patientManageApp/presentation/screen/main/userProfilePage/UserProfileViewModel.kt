@@ -9,6 +9,7 @@ import com.example.patientManageApp.domain.utils.onError
 import com.example.patientManageApp.domain.utils.onSuccess
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.firebase.messaging.FirebaseMessaging
 import com.kakao.sdk.user.UserApiClient
 import com.navercorp.nid.NaverIdLoginSDK
 import com.navercorp.nid.oauth.NidOAuthLogin
@@ -43,21 +44,47 @@ class UserProfileViewModel@Inject constructor(private val useCase: UseCases): Vi
 
         try {
             if (email.contains("naver.com")) {
-                NaverIdLoginSDK.logout()
-                auth.signOut()
-                isLogoutSuccess()
+                useCase.updateFcmToken("").onSuccess {
+                    FirebaseMessaging.getInstance().deleteToken().addOnSuccessListener {
+                        NaverIdLoginSDK.logout()
+                        auth.signOut()
+                        isLogoutSuccess()
+                    }.addOnFailureListener {
+                        isError()
+                    }
+                }.onError {
+                    isError()
+                }
             } else if (email.contains("kakao.com")) {
                 UserApiClient.instance.logout kakaoLogin@{ error ->
                     if(error != null) {
                         isError()
                         return@kakaoLogin
                     }
-                    auth.signOut()
-                    isLogoutSuccess()
+                    viewModelScope.launch updateFcm@ {
+                        useCase.updateFcmToken("").onSuccess {
+                            FirebaseMessaging.getInstance().deleteToken().addOnSuccessListener {
+                                auth.signOut()
+                                isLogoutSuccess()
+                            }.addOnFailureListener {
+                                isError()
+                            }
+                        }.onError {
+                            isError()
+                        }
+                    }
                 }
             } else if (email.contains("gmail.com")) {
-                auth.signOut()
-                isLogoutSuccess()
+                useCase.updateFcmToken("").onSuccess {
+                    FirebaseMessaging.getInstance().deleteToken().addOnSuccessListener {
+                        auth.signOut()
+                        isLogoutSuccess()
+                    }.addOnFailureListener {
+                        isError()
+                    }
+                }.onError {
+                    isError()
+                }
             }
         } catch (e: Exception) {
             isError()

@@ -91,7 +91,6 @@ fun PatientProfileScreen(navController: NavHostController, mainViewModel: MainVi
                         actionLabel = "닫기",
                         duration = SnackbarDuration.Short
                     )
-
                     patientProfileViewModel.isIdle()
                 }
             }
@@ -103,6 +102,7 @@ fun PatientProfileScreen(navController: NavHostController, mainViewModel: MainVi
                         actionLabel = "닫기",
                         duration = SnackbarDuration.Short
                     )
+                    patientProfileViewModel.isIdle()
                 }
             }
         }

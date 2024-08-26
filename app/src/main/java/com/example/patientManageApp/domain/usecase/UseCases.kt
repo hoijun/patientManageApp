@@ -9,5 +9,6 @@ data class UseCases(
     val updateCameraData: UpdateCameraData,
     val getCameraData: GetCameraData,
     val getOccurrenceData: GetOccurrenceData,
-    val updateAgreeTermOfService: UpdateAgreeTermOfService
+    val updateAgreeTermOfService: UpdateAgreeTermOfService,
+    val updateFcmToken: UpdateFcmToken
 )

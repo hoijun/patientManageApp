@@ -9,6 +9,7 @@ import com.example.patientManageApp.domain.usecase.GetUserData
 import com.example.patientManageApp.domain.usecase.RemoveUserData
 import com.example.patientManageApp.domain.usecase.UpdateAgreeTermOfService
 import com.example.patientManageApp.domain.usecase.UpdateCameraData
+import com.example.patientManageApp.domain.usecase.UpdateFcmToken
 import com.example.patientManageApp.domain.usecase.UpdatePatientData
 import com.example.patientManageApp.domain.usecase.UpdateUserData
 import com.example.patientManageApp.domain.usecase.UseCases
@@ -47,6 +48,7 @@ object AppModule {
         updateCameraData = UpdateCameraData(firebaseRepository),
         getCameraData = GetCameraData(firebaseRepository),
         getOccurrenceData = GetOccurrenceData(firebaseRepository),
-        updateAgreeTermOfService = UpdateAgreeTermOfService(firebaseRepository)
+        updateAgreeTermOfService = UpdateAgreeTermOfService(firebaseRepository),
+        updateFcmToken = UpdateFcmToken(firebaseRepository)
     )
 }
