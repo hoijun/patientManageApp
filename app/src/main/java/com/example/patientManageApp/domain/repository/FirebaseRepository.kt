@@ -1,5 +1,6 @@
 package com.example.patientManageApp.domain.repository
 
+import android.net.Uri
 import com.example.patientManageApp.domain.entity.CameraEntity
 import com.example.patientManageApp.domain.entity.OccurrencesEntity
 import com.example.patientManageApp.domain.entity.PatientEntity
@@ -17,4 +18,6 @@ interface FirebaseRepository {
     suspend fun getOccurrenceData(): FirebaseApiResult<HashMap<String, List<OccurrencesEntity>>>
     suspend fun updateAgreeTermOfService(): FirebaseApiResult<Boolean>
     suspend fun updateFcmToken(token: String): FirebaseApiResult<Boolean>
+    suspend fun getOccurrenceJPG(date: String) : FirebaseApiResult<Uri>
+    suspend fun getOccurrenceMP4(date: String) : FirebaseApiResult<Uri>
 }

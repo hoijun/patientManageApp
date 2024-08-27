@@ -104,7 +104,6 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.composeCalender)
-    implementation(libs.socket.io.client)
 
     implementation(libs.androidx.media3.media3.exoplayer)
     implementation(libs.androidx.media3.ui)
@@ -120,6 +119,7 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.messaging.ktx)
+    implementation(libs.firebase.storage.ktx)
 
     implementation(libs.kakao.v2.user)
     implementation(libs.naver.oauth.jdk8)

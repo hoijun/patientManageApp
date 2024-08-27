@@ -1,5 +1,6 @@
 package com.example.patientManageApp.data
 
+import android.net.Uri
 import android.util.Log
 import com.example.patientManageApp.domain.entity.CameraEntity
 import com.example.patientManageApp.domain.entity.OccurrencesEntity
@@ -14,13 +15,14 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.GenericTypeIndicator
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class FirebaseRepositoryImpl @Inject constructor(private val db: FirebaseDatabase) : FirebaseRepository {
+class FirebaseRepositoryImpl @Inject constructor(private val db: FirebaseDatabase, private val storage: FirebaseStorage) : FirebaseRepository {
     override suspend fun getUserData(): FirebaseApiResult<UserEntity> = try {
         val userData =
             db.getReference("Users").child(Firebase.auth.currentUser!!.uid).child("UserData").get()
@@ -123,5 +125,14 @@ class FirebaseRepositoryImpl @Inject constructor(private val db: FirebaseDatabas
         FirebaseApiResult.Success(true)
     } catch (e: Exception) {
         FirebaseApiResult.Error(e)
+    }
+
+    override suspend fun getOccurrenceJPG(date: String): FirebaseApiResult<Uri> {
+        val Jpg = storage.getReference("Users").child(Firebase.auth.currentUser!!.uid).child(date)
+        
+    }
+
+    override suspend fun getOccurrenceMP4(date: String): FirebaseApiResult<Uri> {
+        TODO("Not yet implemented")
     }
 }

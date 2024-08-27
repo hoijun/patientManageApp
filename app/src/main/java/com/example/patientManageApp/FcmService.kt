@@ -36,11 +36,11 @@ class FcmService: FirebaseMessagingService() {
 
         val channelId = getString(R.string.alarm_ChannelId)
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentTitle(message.data["title"].toString())
             .setContentText(message.data["body"].toString())
-            .setDefaults(Notification.DEFAULT_ALL)
+            .setSmallIcon(R.drawable.warning)
             .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channel = NotificationChannel(channelId, "Notice", NotificationManager.IMPORTANCE_DEFAULT)

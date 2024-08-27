@@ -10,8 +10,9 @@ composeVersion = "1.15.0"
 core = "1.15.0"
 coreSplashscreen = "1.0.1"
 firebaseAuth = "23.0.0"
-firebaseBom = "33.1.2"
-firebaseMessagingKtx = "24.0.0"
+firebaseBom = "33.2.0"
+firebaseMessagingKtx = "24.0.1"
+firebaseStorageKtx = "21.0.0"
 hiltAndroid = "2.49"
 hiltAndroidCompiler = "2.48"
 hiltNavigationCompose = "1.2.0"
@@ -21,7 +22,7 @@ junit = "4.13.2"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.4"
 activityCompose = "1.9.1"
-composeBom = "2024.06.00"
+composeBom = "2024.08.00"
 lifecycleViewmodelKtxVersion = "2.8.4"
 material = "1.6.8"
 media3ExoplayerRtsp = "1.4.0"
@@ -32,7 +33,6 @@ playServicesAuth = "21.2.0"
 runtimeLivedata = "1.6.8"
 v2User = "2.20.3"
 views = "1.15.0"
-googleGmsGoogleServices = "4.4.2"
 firebaseDatabase = "21.0.0"
 
 [libraries]
@@ -58,6 +58,7 @@ firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-auth = { module = "com.google.firebase:firebase-auth", version.ref = "firebaseAuth" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-messaging-ktx = { module = "com.google.firebase:firebase-messaging-ktx", version.ref = "firebaseMessagingKtx" }
+firebase-storage-ktx = { module = "com.google.firebase:firebase-storage-ktx", version.ref = "firebaseStorageKtx" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -76,7 +77,6 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.8.1" }
 naver-oauth-jdk8 = { module = "com.navercorp.nid:oauth-jdk8", version.ref = "oauthJdk8" }
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
-socket-io-client = { module = "io.socket:socket.io-client", version = "2.1.0" }
 kakao-v2-user = { module = "com.kakao.sdk:v2-user", version.ref = "v2User" }
 views = { module = "com.patrykandpatrick.vico:views", version.ref = "views" }
 firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
@@ -84,5 +84,4 @@ firebase-database = { group = "com.google.firebase", name = "firebase-database",
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-googleGmsGoogleServices = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
 
