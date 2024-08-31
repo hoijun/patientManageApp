@@ -235,9 +235,10 @@ private fun BirthField(
         ) {
             Text(
                 text = value,
-                color = if (isAbleEditPatientBirth) Color.DarkGray else {
+                color = if (isAbleEditPatientBirth) Color.Black else {
                     Color.LightGray
                 },
+                fontSize = 15.sp,
                 modifier = Modifier.padding(start = 15.dp)
             )
         }

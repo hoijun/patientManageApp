@@ -1,5 +1,6 @@
 package com.example.patientManageApp.di
 
+import com.example.patientManageApp.FcmService
 import com.example.patientManageApp.data.FirebaseRepositoryImpl
 import com.example.patientManageApp.domain.repository.FirebaseRepository
 import com.example.patientManageApp.domain.usecase.GetCameraData
@@ -8,6 +9,7 @@ import com.example.patientManageApp.domain.usecase.GetOccurrenceJPG
 import com.example.patientManageApp.domain.usecase.GetOccurrenceMP4
 import com.example.patientManageApp.domain.usecase.GetPatientData
 import com.example.patientManageApp.domain.usecase.GetUserData
+import com.example.patientManageApp.domain.usecase.RemoveOccurrenceJPGAndMP4
 import com.example.patientManageApp.domain.usecase.RemoveUserData
 import com.example.patientManageApp.domain.usecase.UpdateAgreeTermOfService
 import com.example.patientManageApp.domain.usecase.UpdateCameraData
@@ -52,7 +54,7 @@ object AppModule {
     @Singleton
     fun provideUseCases(
         firebaseRepository: FirebaseRepository
-    ) = UseCases(
+    ): UseCases = UseCases(
         getUserData = GetUserData(firebaseRepository),
         getPatientData = GetPatientData(firebaseRepository),
         updateUserData = UpdateUserData(firebaseRepository),
@@ -64,6 +66,7 @@ object AppModule {
         updateAgreeTermOfService = UpdateAgreeTermOfService(firebaseRepository),
         updateFcmToken = UpdateFcmToken(firebaseRepository),
         getOccurrenceJPG = GetOccurrenceJPG(firebaseRepository),
-        getOccurrenceMP4 = GetOccurrenceMP4(firebaseRepository)
+        getOccurrenceMP4 = GetOccurrenceMP4(firebaseRepository),
+        removeOccurrenceJPGAndMP4 = RemoveOccurrenceJPGAndMP4(firebaseRepository)
     )
 }

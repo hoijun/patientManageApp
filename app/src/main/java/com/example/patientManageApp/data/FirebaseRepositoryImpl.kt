@@ -127,12 +127,30 @@ class FirebaseRepositoryImpl @Inject constructor(private val db: FirebaseDatabas
         FirebaseApiResult.Error(e)
     }
 
-    override suspend fun getOccurrenceJPG(date: String): FirebaseApiResult<Uri> {
-        val Jpg = storage.getReference("Users").child(Firebase.auth.currentUser!!.uid).child(date)
-        
+    override suspend fun getOccurrenceJPG(date: String): FirebaseApiResult<Uri> = try {
+        val uri = storage.getReference("Users").child(Firebase.auth.currentUser!!.uid).child("${date}.jpg").downloadUrl.await()
+        FirebaseApiResult.Success(uri)
+    } catch (e: Exception) {
+        FirebaseApiResult.Error(e)
     }
 
-    override suspend fun getOccurrenceMP4(date: String): FirebaseApiResult<Uri> {
-        TODO("Not yet implemented")
+    override suspend fun getOccurrenceMP4(date: String): FirebaseApiResult<Uri> = try {
+        val uri = storage.getReference("Users").child(Firebase.auth.currentUser!!.uid).child("${date}.mp4").downloadUrl.await()
+        FirebaseApiResult.Success(uri)
+    } catch (e: Exception) {
+        FirebaseApiResult.Error(e)
+    }
+
+    override suspend fun removeOccurrenceJPGAndMP4(dates: HashMap<String, List<OccurrencesEntity>>): FirebaseApiResult<Boolean> = try {
+        dates.forEach { (key, value) ->
+            value.forEach { occurrencesEntity ->
+                val date = key + "_" + occurrencesEntity.time.replace(":", "")
+                storage.getReference("Users").child(Firebase.auth.currentUser!!.uid).child("${date}.jpg").delete().await()
+                storage.getReference("Users").child(Firebase.auth.currentUser!!.uid).child("${date}.mp4").delete().await()
+            }
+        }
+        FirebaseApiResult.Success(true)
+    } catch (e: Exception) {
+        FirebaseApiResult.Error(e)
     }
 }

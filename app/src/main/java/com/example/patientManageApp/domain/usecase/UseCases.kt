@@ -12,5 +12,6 @@ data class UseCases(
     val updateAgreeTermOfService: UpdateAgreeTermOfService,
     val updateFcmToken: UpdateFcmToken,
     val getOccurrenceJPG: GetOccurrenceJPG,
-    val getOccurrenceMP4: GetOccurrenceMP4
+    val getOccurrenceMP4: GetOccurrenceMP4,
+    val removeOccurrenceJPGAndMP4: RemoveOccurrenceJPGAndMP4
 )

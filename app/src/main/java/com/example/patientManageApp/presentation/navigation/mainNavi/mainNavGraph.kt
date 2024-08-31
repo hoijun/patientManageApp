@@ -3,8 +3,6 @@ package com.example.patientManageApp.presentation.navigation.mainNavi
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -15,7 +13,7 @@ import com.example.patientManageApp.presentation.AppScreen
 import com.example.patientManageApp.presentation.screen.main.MainViewModel
 import com.example.patientManageApp.presentation.screen.main.analysisPage.AnalysisScreen
 import com.example.patientManageApp.presentation.screen.main.calendarPage.CalendarScreen
-import com.example.patientManageApp.presentation.screen.main.calendarPage.DetailCalendarInfoScreen
+import com.example.patientManageApp.presentation.screen.main.detailCalendarInfoPage.DetailCalendarInfoScreen
 import com.example.patientManageApp.presentation.screen.main.homePage.HomeScreen
 import com.example.patientManageApp.presentation.screen.main.myPagePage.MyPageScreen
 import com.example.patientManageApp.presentation.screen.main.patientProfilePage.PatientProfileScreen

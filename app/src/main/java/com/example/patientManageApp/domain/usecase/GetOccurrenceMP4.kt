@@ -6,6 +6,6 @@ import com.example.patientManageApp.domain.repository.FirebaseRepository
 import com.example.patientManageApp.domain.utils.FirebaseApiResult
 
 class GetOccurrenceMP4(private val firebaseRepository: FirebaseRepository) {
-    suspend operator fun invoke() : FirebaseApiResult<Uri> =
-        firebaseRepository.getOccurrenceMP4()
+    suspend operator fun invoke(date: String) : FirebaseApiResult<Uri> =
+        firebaseRepository.getOccurrenceMP4(date)
 }

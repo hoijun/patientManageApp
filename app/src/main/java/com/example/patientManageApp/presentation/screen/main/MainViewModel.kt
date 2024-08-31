@@ -1,5 +1,8 @@
 package com.example.patientManageApp.presentation.screen.main
 
+import android.graphics.Bitmap
+import android.media.MediaMetadataRetriever
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.patientManageApp.domain.entity.CameraEntity

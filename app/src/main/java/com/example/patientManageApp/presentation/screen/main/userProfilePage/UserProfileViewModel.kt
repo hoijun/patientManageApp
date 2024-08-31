@@ -1,8 +1,8 @@
 package com.example.patientManageApp.presentation.screen.main.userProfilePage
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.patientManageApp.domain.entity.OccurrencesEntity
 import com.example.patientManageApp.domain.entity.UserEntity
 import com.example.patientManageApp.domain.usecase.UseCases
 import com.example.patientManageApp.domain.utils.onError
@@ -91,10 +91,12 @@ class UserProfileViewModel@Inject constructor(private val useCase: UseCases): Vi
         }
     }
 
-    fun withdrawal() = viewModelScope.launch {
+    fun withdrawal(occurrenceData: HashMap<String, List<OccurrencesEntity>>) = viewModelScope.launch {
         isLoading()
         useCase.removeUserData()
             .onSuccess {
+                useCase.removeOccurrenceJPGAndMP4(occurrenceData)
+
                 val auth = Firebase.auth
                 val email = auth.currentUser?.email
 

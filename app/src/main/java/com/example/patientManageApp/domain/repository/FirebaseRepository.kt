@@ -20,4 +20,5 @@ interface FirebaseRepository {
     suspend fun updateFcmToken(token: String): FirebaseApiResult<Boolean>
     suspend fun getOccurrenceJPG(date: String) : FirebaseApiResult<Uri>
     suspend fun getOccurrenceMP4(date: String) : FirebaseApiResult<Uri>
+    suspend fun removeOccurrenceJPGAndMP4(dates: HashMap<String, List<OccurrencesEntity>>) : FirebaseApiResult<Boolean>
 }

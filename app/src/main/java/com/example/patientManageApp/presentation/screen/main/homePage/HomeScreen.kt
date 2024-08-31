@@ -3,7 +3,6 @@ package com.example.patientManageApp.presentation.screen.main.homePage
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -15,6 +14,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -47,7 +48,6 @@ import com.example.patientManageApp.domain.entity.CameraEntity
 import com.example.patientManageApp.presentation.AppScreen
 import com.example.patientManageApp.presentation.BackOnPressed
 import com.example.patientManageApp.presentation.WebCamActivity
-import com.example.patientManageApp.presentation.moveScreen
 import com.example.patientManageApp.presentation.moveScreenWithArgs
 import com.example.patientManageApp.presentation.noRippleClickable
 import com.example.patientManageApp.presentation.screen.main.MainViewModel
@@ -136,6 +136,7 @@ private fun HomeScreenHeader(cameraCount: Int, onSettingBtnClick: () -> Unit) {
 @Composable
 private fun CameraItem(cameraList: List<CameraEntity>, onSettingBtnClick: (cameraEntity: CameraEntity) -> Unit) {
     val context = LocalContext.current
+    val interactionSource = remember { MutableInteractionSource() }
     LazyColumn(modifier = Modifier.padding(top = 10.dp)) {
         items(items = cameraList, key = { it.name }) {
             Surface(modifier = Modifier
@@ -174,7 +175,9 @@ private fun CameraItem(cameraList: List<CameraEntity>, onSettingBtnClick: (camer
 
                     Box(modifier = Modifier) {
                         Image(
-                            painter = painterResource(id = R.drawable.ic_launcher_background),
+                            painter = painterResource(id = getBackGroundImage(
+                                cameraList[cameraList.indexOf(it)].backGroundImg
+                            )),
                             contentDescription = "thumbnail",
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -182,19 +185,37 @@ private fun CameraItem(cameraList: List<CameraEntity>, onSettingBtnClick: (camer
                             contentScale = ContentScale.FillWidth
                         )
 
-                        Icon(
-                            painter = painterResource(id = R.drawable.play),
-                            contentDescription = "play",
+                        Button(
+                            onClick = {
+                                val intent = Intent(context, WebCamActivity::class.java).apply {
+                                    putExtra("rtspAddress", cameraList[cameraList.indexOf(it)].rtspAddress)
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                }
+                                context.startActivity(intent)
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFc0c2c4).copy(0.85f),
+                                contentColor = Color.Black
+                            ),
                             modifier = Modifier
                                 .align(Alignment.Center)
-                                .noRippleClickable {
-                                    val intent = Intent(context, WebCamActivity::class.java).apply {
-                                        putExtra("rtspAddress", cameraList[cameraList.indexOf(it)].rtspAddress)
-                                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                    }
-                                    context.startActivity(intent)
-                                }
-                        )
+                                .indication(
+                                    interactionSource = interactionSource,
+                                    rememberRipple(color = Color(0xfff1f3f5))
+                                ),
+                            shape = RoundedCornerShape(20.dp),
+                            interactionSource = interactionSource
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.play),
+                                    modifier = Modifier.size(25.dp),
+                                    contentDescription = "play"
+                                )
+
+                                Text("카메라 재생", modifier = Modifier.padding(start = 10.dp))
+                            }
+                        }
                     }
                 }
             }
@@ -202,8 +223,19 @@ private fun CameraItem(cameraList: List<CameraEntity>, onSettingBtnClick: (camer
     }
 }
 
+private fun getBackGroundImage(name: String): Int {
+    return when (name) {
+        "livingRoom" -> R.drawable.living_room
+        "bedRoom" -> R.drawable.bed_room
+        "myRoom" -> R.drawable.my_room
+        "kitchenRoom" -> R.drawable.kitchen_room
+        else -> R.drawable.ic_launcher_background
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen(emptyList(), onSettingBtnClick = {})
+    HomeScreen(listOf(CameraEntity("test", "test", "livingRoom")),
+        onSettingBtnClick = {})
 }

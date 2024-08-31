@@ -45,9 +45,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -147,7 +145,7 @@ fun UserProfileScreen(navController: NavHostController, mainViewModel: MainViewM
                 userProfileViewModel.updateUserData(it)
             },
             onLogoutButtonClick = { userProfileViewModel.logout() },
-            onWithdrawalButtonClick = { userProfileViewModel.withdrawal() }
+            onWithdrawalButtonClick = { userProfileViewModel.withdrawal(mainViewModel.occurrenceData) }
         )
     }
 }
@@ -278,12 +276,12 @@ private fun BirthField(
         Text(
             text = "생일",
             fontSize = 15.sp,
-            modifier = Modifier.padding(end = 15.dp)
+            modifier = Modifier.padding(end = 15.dp),
         )
         Box(
             modifier = Modifier
                 .border(
-                    1.dp, if (isAbleEditUserBirth) Color.DarkGray else {
+                    1.dp, if (isAbleEditUserBirth) Color.Black else {
                         Color.LightGray
                     }, RoundedCornerShape(4.dp)
                 )
@@ -296,6 +294,7 @@ private fun BirthField(
                 color = if (isAbleEditUserBirth) Color.DarkGray else {
                     Color.LightGray
                 },
+                fontSize = 15.sp,
                 modifier = Modifier.padding(start = 15.dp)
             )
         }

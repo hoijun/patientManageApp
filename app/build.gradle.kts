@@ -126,4 +126,5 @@ dependencies {
     implementation(libs.play.services.auth)
 
     implementation (libs.accompanist.permissions)
+    implementation (libs.coil.compose)
 }

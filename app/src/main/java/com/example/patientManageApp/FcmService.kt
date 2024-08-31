@@ -1,32 +1,81 @@
 package com.example.patientManageApp
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.graphics.drawable.BitmapDrawable
+import android.net.Uri
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import coil.ImageLoader
+import coil.request.ErrorResult
+import coil.request.ImageRequest
+import coil.request.SuccessResult
+import com.example.patientManageApp.domain.usecase.UseCases
+import com.example.patientManageApp.domain.utils.getResult
+import com.example.patientManageApp.domain.utils.onSuccess
 import com.example.patientManageApp.presentation.MainActivity
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class FcmService: FirebaseMessagingService() {
+@AndroidEntryPoint
+class FcmService : FirebaseMessagingService() {
+
+    @Inject
+    lateinit var useCases: UseCases
+
     override fun onNewToken(token: String) {
         Log.d("FCM", "onNewToken: $token")
         super.onNewToken(token)
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
-        Log.d("FCM", "onNewToken: $message")
+        Log.d("FCM", "remoteMessage: $message")
         super.onMessageReceived(message)
         if (message.data.isNotEmpty()) {
-            sendNotification(message)
+            CoroutineScope(Dispatchers.IO).launch {
+                useCases.getOccurrenceJPG(message.data["date"].toString()).getResult(
+                    success = {
+                        withContext(Dispatchers.Main) {
+                            sendNotification(message, uriToBitmap(it.data))
+                        }
+                    },
+                    error = {
+                        withContext(Dispatchers.Main) {
+                            sendNotification(message, null)
+                        }
+                    }
+                )
+            }
         }
     }
 
-    private fun sendNotification(message: RemoteMessage) {
+    private suspend fun uriToBitmap(uri: Uri): Bitmap? {
+        val loader = ImageLoader(this)
+        val request = ImageRequest.Builder(this)
+            .data(uri)
+            .allowHardware(false)
+            .build()
+
+        return when (val result = loader.execute(request)) {
+            is SuccessResult -> (result.drawable as? BitmapDrawable)?.bitmap
+            is ErrorResult -> {
+                null
+            }
+        }
+    }
+
+    private fun sendNotification(message: RemoteMessage, jpgBitmap: Bitmap?) {
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
@@ -41,6 +90,14 @@ class FcmService: FirebaseMessagingService() {
             .setSmallIcon(R.drawable.warning)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
+
+        if (jpgBitmap != null) {
+            val bigStyle = NotificationCompat.BigPictureStyle().also {
+                it.bigPicture(jpgBitmap)
+            }
+
+            notificationBuilder.setStyle(bigStyle)
+        }
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channel = NotificationChannel(channelId, "Notice", NotificationManager.IMPORTANCE_DEFAULT)

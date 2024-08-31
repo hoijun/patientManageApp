@@ -2,8 +2,12 @@ package com.example.patientManageApp.presentation.screen.main.settingCameraPage
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,13 +37,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -119,14 +124,14 @@ fun SettingCameraScreen(navController: NavHostController, cameraEntity: CameraEn
                 mainViewModel.updateCameraData(cameraList.filterIndexed { index, _ -> index != cameraIndex })
                 settingCameraViewModel.updateCameraData(cameraList.filterIndexed { index, _ -> index != cameraIndex })
             },
-            onSaveButtonClick = OnSaveButtonClick@{
-                if (!isValidRtspAddress(it.rtspAddress)) {
+            onSaveButtonClick = OnSaveButtonClick@{ cameraEntity ->
+                if (!isValidRtspAddress(cameraEntity.rtspAddress)) {
                     showInvalidRtspSnackBar = true
                     snackBarMessage = "올바른 RTSP 주소가 아닙니다."
                     return@OnSaveButtonClick
                 }
 
-                if (checkDuplicateCamera(cameraList, it, cameraIndex)) {
+                if (checkDuplicateCamera(cameraList, cameraEntity, cameraIndex)) {
                     showInvalidRtspSnackBar = true
                     snackBarMessage = "중복된 내용이 존재 합니다."
                     return@OnSaveButtonClick
@@ -134,9 +139,9 @@ fun SettingCameraScreen(navController: NavHostController, cameraEntity: CameraEn
 
                 val newCameraEntities = cameraList.toMutableList()
                 if (cameraIndex == -1) {
-                    newCameraEntities.add(it)
+                    newCameraEntities.add(cameraEntity)
                 } else {
-                    newCameraEntities[cameraIndex] = it
+                    newCameraEntities[cameraIndex] = cameraEntity
                 }
                 mainViewModel.updateCameraData(newCameraEntities.toList())
                 settingCameraViewModel.updateCameraData(newCameraEntities.toList())
@@ -151,17 +156,18 @@ private fun SettingCameraScreen(
     cameraIndex: Int,
     onBackButtonClick: () -> Unit,
     onRemoveBtn: () -> Unit,
-    onSaveButtonClick: (cameraEntity: CameraEntity) -> Unit = {}
+    onSaveButtonClick: (cameraEntity: CameraEntity) -> Unit
 ) {
     var cameraName by remember { mutableStateOf(cameraEntity.name) }
     var rtspAddress by remember { mutableStateOf(cameraEntity.rtspAddress) }
+    var backGroundImg by remember { mutableStateOf(cameraEntity.backGroundImg) }
     var isDialogOpen by remember { mutableStateOf(false) }
     val isSaveButtonEnabled by remember {
         derivedStateOf {
             if (cameraIndex == -1) {
-                cameraEntity.name != cameraName && cameraEntity.rtspAddress != rtspAddress
+                cameraEntity.name != cameraName && cameraEntity.rtspAddress != rtspAddress && backGroundImg != cameraEntity.backGroundImg
             } else {
-                ( cameraEntity.name != cameraName || cameraEntity.rtspAddress != rtspAddress ) && ( cameraName != "" && rtspAddress != "")
+                ( cameraEntity.name != cameraName || cameraEntity.rtspAddress != rtspAddress || backGroundImg != cameraEntity.backGroundImg ) && ( cameraName != "" && rtspAddress != "")
             }
         }
     }
@@ -198,9 +204,15 @@ private fun SettingCameraScreen(
             rtspAddress = it
         }
 
+        BackGroundField(backGroundImg) {
+            backGroundImg = getBackGroundImage(it)
+        }
+
         Spacer(modifier = Modifier.weight(1f))
 
-        SaveButton(isSaveButtonEnabled) { onSaveButtonClick(CameraEntity(cameraName, rtspAddress)) }
+        SaveButton(isSaveButtonEnabled) {
+            onSaveButtonClick(CameraEntity(cameraName, rtspAddress, backGroundImg))
+        }
     }
 }
 
@@ -252,7 +264,9 @@ private fun CameraNameField(cameraName: String, onCameraNameChange: (String) -> 
         modifier = Modifier.padding(start = 20.dp, top = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = "카메라 이름", fontSize = 15.sp, modifier = Modifier.width(80.dp))
+        Text(text = "카메라 이름", fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.width(80.dp))
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth()
@@ -273,7 +287,9 @@ private fun CameraNameField(cameraName: String, onCameraNameChange: (String) -> 
 private fun RtspAddressField(rtspAddress: String, onRtspAddressChange: (String) -> Unit) {
     Row(modifier = Modifier.padding(start = 20.dp, top = 20.dp),
         verticalAlignment = Alignment.CenterVertically) {
-        Text(text = "RTSP 주소", fontSize = 15.sp, modifier = Modifier.width(80.dp))
+        Text(text = "RTSP 주소", fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.width(80.dp))
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth()
@@ -288,6 +304,78 @@ private fun RtspAddressField(rtspAddress: String, onRtspAddressChange: (String) 
             singleLine = true
         )
     }
+}
+
+@Composable
+private fun BackGroundField(backGroundImg: String, clickBackGroundImg: (selectedImg: Int) -> Unit) {
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+    val imageSize = (screenWidth - 70.dp) / 2
+    Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp))
+    {
+        Text(text = "배경 이미지 선택",
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(start = 5.dp, top = 10.dp, bottom = 15.dp))
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            BackGroundImage(
+                resourceId = R.drawable.living_room,
+                isSelected = getBackGroundImage(R.drawable.living_room) == backGroundImg,
+                size = imageSize
+            ) { clickBackGroundImg(it) }
+            BackGroundImage(
+                resourceId = R.drawable.bed_room,
+                isSelected = getBackGroundImage(R.drawable.bed_room) == backGroundImg,
+                size = imageSize
+            ) { clickBackGroundImg(it) }
+        }
+
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .padding(top = 20.dp)
+                .fillMaxWidth()
+        ) {
+            BackGroundImage(
+                resourceId = R.drawable.my_room,
+                isSelected = getBackGroundImage(R.drawable.my_room) == backGroundImg,
+                size = imageSize
+            ) { clickBackGroundImg(it) }
+            BackGroundImage(
+                resourceId = R.drawable.kitchen_room,
+                isSelected = getBackGroundImage(R.drawable.kitchen_room) == backGroundImg,
+                size = imageSize
+            ) { clickBackGroundImg(it) }
+        }
+    }
+}
+
+@Composable
+private fun BackGroundImage(
+    resourceId: Int,
+    isSelected: Boolean,
+    size: Dp,
+    clickBackGroundImg: (selectedImg: Int) -> Unit
+) {
+    Image(
+        painter = painterResource(id = resourceId),
+        contentDescription = "background",
+        modifier = Modifier
+            .clip(RoundedCornerShape(15.dp))
+            .border(
+                5.dp,
+                Color(0xFFc0c2c4),
+                RoundedCornerShape(15.dp)
+            )
+            .width(size)
+            .noRippleClickable {
+                clickBackGroundImg(resourceId)
+            },
+        alpha = if (isSelected) 1f else 0.5f
+    )
 }
 
 @Composable
@@ -330,13 +418,24 @@ private fun checkDuplicateCamera(
         it != cameraList[cameraIndex] && (it.name == cameraEntity.name || it.rtspAddress == cameraEntity.rtspAddress) }
 }
 
+private fun getBackGroundImage(resourceId: Int): String {
+    return when (resourceId) {
+        R.drawable.living_room -> "livingRoom"
+        R.drawable.bed_room -> "bedRoom"
+        R.drawable.my_room -> "myRoom"
+        R.drawable.kitchen_room -> "kitchenRoom"
+        else -> ""
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun SettingCameraScreenPreview() {
     SettingCameraScreen(
-        cameraEntity = CameraEntity("테스트", "테스트"),
+        cameraEntity = CameraEntity("테스트", "테스트", "livingRoom"),
         cameraIndex = 0,
         onBackButtonClick = {},
-        onRemoveBtn = {}
+        onRemoveBtn = {},
+        onSaveButtonClick = { }
     )
 }
