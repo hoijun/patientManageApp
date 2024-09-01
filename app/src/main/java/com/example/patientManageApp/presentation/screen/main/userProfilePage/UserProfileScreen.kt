@@ -145,7 +145,7 @@ fun UserProfileScreen(navController: NavHostController, mainViewModel: MainViewM
                 userProfileViewModel.updateUserData(it)
             },
             onLogoutButtonClick = { userProfileViewModel.logout() },
-            onWithdrawalButtonClick = { userProfileViewModel.withdrawal(mainViewModel.occurrenceData) }
+            onWithdrawalButtonClick = { userProfileViewModel.withdrawal() }
         )
     }
 }

@@ -89,6 +89,7 @@ class FcmService : FirebaseMessagingService() {
             .setContentText(message.data["body"].toString())
             .setSmallIcon(R.drawable.warning)
             .setContentIntent(pendingIntent)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
 
         if (jpgBitmap != null) {
@@ -100,7 +101,7 @@ class FcmService : FirebaseMessagingService() {
         }
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val channel = NotificationChannel(channelId, "Notice", NotificationManager.IMPORTANCE_DEFAULT)
+        val channel = NotificationChannel(channelId, "Notice", NotificationManager.IMPORTANCE_HIGH)
         notificationManager.createNotificationChannel(channel)
 
         notificationManager.notify(requestCode, notificationBuilder.build())

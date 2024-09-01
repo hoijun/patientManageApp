@@ -8,6 +8,7 @@ import com.example.patientManageApp.domain.entity.PatientEntity
 import com.example.patientManageApp.domain.entity.UserEntity
 import com.example.patientManageApp.domain.repository.FirebaseRepository
 import com.example.patientManageApp.domain.utils.FirebaseApiResult
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -17,7 +18,11 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -141,16 +146,23 @@ class FirebaseRepositoryImpl @Inject constructor(private val db: FirebaseDatabas
         FirebaseApiResult.Error(e)
     }
 
-    override suspend fun removeOccurrenceJPGAndMP4(dates: HashMap<String, List<OccurrencesEntity>>): FirebaseApiResult<Boolean> = try {
-        dates.forEach { (key, value) ->
-            value.forEach { occurrencesEntity ->
-                val date = key + "_" + occurrencesEntity.time.replace(":", "")
-                storage.getReference("Users").child(Firebase.auth.currentUser!!.uid).child("${date}.jpg").delete().await()
-                storage.getReference("Users").child(Firebase.auth.currentUser!!.uid).child("${date}.mp4").delete().await()
+    override suspend fun removeOccurrenceJPGAndMP4(): FirebaseApiResult<Boolean> = withContext(Dispatchers.IO) {
+        try {
+            val list =
+                storage.getReference("Users").child(Firebase.auth.currentUser!!.uid).listAll()
+                    .await()
+            val batchSize = 50
+
+            list.items.chunked(batchSize).forEach { batch ->
+                val deleteJobs = batch.map { item ->
+                    async { item.delete().await() }
+                }
+                deleteJobs.awaitAll()
             }
+
+            FirebaseApiResult.Success(true)
+        } catch (e: Exception) {
+            FirebaseApiResult.Error(e)
         }
-        FirebaseApiResult.Success(true)
-    } catch (e: Exception) {
-        FirebaseApiResult.Error(e)
     }
 }

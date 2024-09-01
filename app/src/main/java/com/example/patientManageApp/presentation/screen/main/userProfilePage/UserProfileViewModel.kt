@@ -91,11 +91,11 @@ class UserProfileViewModel@Inject constructor(private val useCase: UseCases): Vi
         }
     }
 
-    fun withdrawal(occurrenceData: HashMap<String, List<OccurrencesEntity>>) = viewModelScope.launch {
+    fun withdrawal() = viewModelScope.launch {
         isLoading()
         useCase.removeUserData()
             .onSuccess {
-                useCase.removeOccurrenceJPGAndMP4(occurrenceData)
+                useCase.removeOccurrenceJPGAndMP4()
 
                 val auth = Firebase.auth
                 val email = auth.currentUser?.email
@@ -119,7 +119,7 @@ class UserProfileViewModel@Inject constructor(private val useCase: UseCases): Vi
                             auth.currentUser!!.delete().addOnSuccessListener {
                                 isWithdrawalSuccess()
                             }.addOnFailureListener {
-                                isUpdateSuccess()
+                                isError()
                             }
                         }
                     })
@@ -132,7 +132,7 @@ class UserProfileViewModel@Inject constructor(private val useCase: UseCases): Vi
                             auth.currentUser!!.delete().addOnSuccessListener {
                                 isWithdrawalSuccess()
                             }.addOnFailureListener {
-                                isUpdateSuccess()
+                                isError()
                             }
                         }
                     }
@@ -140,7 +140,7 @@ class UserProfileViewModel@Inject constructor(private val useCase: UseCases): Vi
                     auth.currentUser!!.delete().addOnSuccessListener {
                         isWithdrawalSuccess()
                     }.addOnFailureListener {
-                        isUpdateSuccess()
+                        isError()
                     }
                 }
             }
