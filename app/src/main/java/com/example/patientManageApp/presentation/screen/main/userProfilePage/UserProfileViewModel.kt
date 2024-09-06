@@ -2,11 +2,11 @@ package com.example.patientManageApp.presentation.screen.main.userProfilePage
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.patientManageApp.domain.entity.OccurrencesEntity
 import com.example.patientManageApp.domain.entity.UserEntity
 import com.example.patientManageApp.domain.usecase.UseCases
 import com.example.patientManageApp.domain.utils.onError
 import com.example.patientManageApp.domain.utils.onSuccess
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.messaging.FirebaseMessaging
@@ -32,7 +32,7 @@ class UserProfileViewModel@Inject constructor(private val useCase: UseCases): Vi
             .onError { isError() }
     }
 
-    fun logout() = viewModelScope.launch {
+    fun logout(googleSignInClient: GoogleSignInClient?) = viewModelScope.launch {
         isLoading()
         val auth = Firebase.auth
         val email = auth.currentUser?.email
@@ -61,7 +61,7 @@ class UserProfileViewModel@Inject constructor(private val useCase: UseCases): Vi
                         isError()
                         return@kakaoLogin
                     }
-                    viewModelScope.launch updateFcm@ {
+                    viewModelScope.launch {
                         useCase.updateFcmToken("").onSuccess {
                             FirebaseMessaging.getInstance().deleteToken().addOnSuccessListener {
                                 auth.signOut()
@@ -75,15 +75,23 @@ class UserProfileViewModel@Inject constructor(private val useCase: UseCases): Vi
                     }
                 }
             } else if (email.contains("gmail.com")) {
-                useCase.updateFcmToken("").onSuccess {
-                    FirebaseMessaging.getInstance().deleteToken().addOnSuccessListener {
-                        auth.signOut()
-                        isLogoutSuccess()
-                    }.addOnFailureListener {
-                        isError()
+                googleSignInClient?.signOut()?.addOnCompleteListener {
+                    if (!it.isSuccessful) {
+                        return@addOnCompleteListener
                     }
-                }.onError {
-                    isError()
+
+                    viewModelScope.launch {
+                        useCase.updateFcmToken("").onSuccess {
+                            FirebaseMessaging.getInstance().deleteToken().addOnSuccessListener {
+                                auth.signOut()
+                                isLogoutSuccess()
+                            }.addOnFailureListener {
+                                isError()
+                            }
+                        }.onError {
+                            isError()
+                        }
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -91,7 +99,7 @@ class UserProfileViewModel@Inject constructor(private val useCase: UseCases): Vi
         }
     }
 
-    fun withdrawal() = viewModelScope.launch {
+    fun withdrawal(googleSignInClient: GoogleSignInClient?) = viewModelScope.launch {
         isLoading()
         useCase.removeUserData()
             .onSuccess {
@@ -137,14 +145,17 @@ class UserProfileViewModel@Inject constructor(private val useCase: UseCases): Vi
                         }
                     }
                 } else if (email.contains("gmail.com")) {
-                    auth.currentUser!!.delete().addOnSuccessListener {
-                        isWithdrawalSuccess()
-                    }.addOnFailureListener {
+                    googleSignInClient?.revokeAccess()?.addOnSuccessListener {
+                        auth.currentUser!!.delete().addOnSuccessListener {
+                            isWithdrawalSuccess()
+                        }.addOnFailureListener {
+                            isError()
+                        }
+                    }?.addOnFailureListener {
                         isError()
                     }
                 }
-            }
-            .onError { isError() }
+            }.onError { isError() }
     }
 
     fun isIdle() {

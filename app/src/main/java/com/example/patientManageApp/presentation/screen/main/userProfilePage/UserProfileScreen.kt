@@ -1,6 +1,7 @@
 package com.example.patientManageApp.presentation.screen.main.userProfilePage
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -52,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.example.patientManageApp.BuildConfig
 import com.example.patientManageApp.R
 import com.example.patientManageApp.domain.entity.UserEntity
 import com.example.patientManageApp.presentation.AppScreen
@@ -65,6 +67,10 @@ import com.example.patientManageApp.presentation.WithdrawalWarningDialog
 import com.example.patientManageApp.presentation.moveScreen
 import com.example.patientManageApp.presentation.noRippleClickable
 import com.example.patientManageApp.presentation.screen.main.MainViewModel
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
@@ -144,8 +150,12 @@ fun UserProfileScreen(navController: NavHostController, mainViewModel: MainViewM
                 mainViewModel.updateUserData(it)
                 userProfileViewModel.updateUserData(it)
             },
-            onLogoutButtonClick = { userProfileViewModel.logout() },
-            onWithdrawalButtonClick = { userProfileViewModel.withdrawal() }
+            onLogoutButtonClick = {
+                userProfileViewModel.logout(getGoogleSignInClient(context))
+            },
+            onWithdrawalButtonClick = {
+                userProfileViewModel.withdrawal(getGoogleSignInClient(context))
+            }
         )
     }
 }
@@ -397,6 +407,21 @@ private fun WithdrawalButton(onClick: () -> Unit) {
         fontSize = 12.sp,
         color = Color.Gray,
         textAlign = TextAlign.End)
+}
+
+private fun getGoogleSignInClient(context: Context): GoogleSignInClient? {
+    val signInClient = Identity.getSignInClient(context)
+    var googleSignInClient: GoogleSignInClient? = null
+    if (Firebase.auth.currentUser?.email?.contains("gmail.com") == true) {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(BuildConfig.Google_WebClient_Id)
+            .requestEmail()
+            .build()
+
+        googleSignInClient = GoogleSignIn.getClient(context, gso)
+    }
+
+    return googleSignInClient
 }
 
 @Preview(showBackground = true)
