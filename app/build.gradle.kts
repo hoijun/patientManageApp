@@ -124,6 +124,9 @@ dependencies {
     implementation(libs.kakao.v2.user)
     implementation(libs.naver.oauth.jdk8)
     implementation(libs.play.services.auth)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
 
     implementation (libs.accompanist.permissions)
     implementation (libs.coil.compose)

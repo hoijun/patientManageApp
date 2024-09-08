@@ -3,6 +3,9 @@ package com.example.patientManageApp.presentation.screen.login.loginPage
 import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.activity.result.ActivityResult
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetCredentialResponse
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -11,6 +14,7 @@ import com.example.patientManageApp.domain.utils.onError
 import com.example.patientManageApp.domain.utils.onSuccess
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.GoogleAuthProvider
@@ -32,28 +36,36 @@ class LoginViewModel @Inject constructor(private val useCases: UseCases) : ViewM
     val loginUiState = _loginUiState.asStateFlow()
     private var auth: FirebaseAuth = FirebaseAuth.getInstance()
 
-    fun googleLogin(activityResult: ActivityResult) {
+    fun googleSignIn(result: GetCredentialResponse) {
         try {
-            val account = GoogleSignIn.getSignedInAccountFromIntent(activityResult.data)
-                .getResult(ApiException::class.java)
-            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-            auth.signInWithCredential(credential)
-                .addOnCompleteListener { task ->
-                    if (!task.isSuccessful) {
-                        loginFail()
-                        return@addOnCompleteListener
-                    }
-                    val isNewUser = task.result?.additionalUserInfo?.isNewUser ?: false
-                    if (isNewUser) {
-                        auth.currentUser?.delete()?.addOnCompleteListener { deleteTask ->
-                            if (deleteTask.isSuccessful) {
-                                signUp()
+            when (val credential = result.credential) {
+                is CustomCredential -> {
+                    if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                        val googleIdTokenCredential =
+                            GoogleIdTokenCredential.createFrom(credential.data)
+                        val idToken = googleIdTokenCredential.idToken
+                        val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
+                        auth.signInWithCredential(firebaseCredential)
+                            .addOnCompleteListener { task ->
+                                if (!task.isSuccessful) {
+                                    loginFail()
+                                    return@addOnCompleteListener
+                                }
+                                val isNewUser = task.result?.additionalUserInfo?.isNewUser ?: false
+                                if (isNewUser) {
+                                    auth.currentUser?.delete()
+                                        ?.addOnCompleteListener { deleteTask ->
+                                            if (deleteTask.isSuccessful) {
+                                                signUp()
+                                            }
+                                        }
+                                } else {
+                                    loginSuccess()
+                                }
                             }
-                        }
-                    } else {
-                        loginSuccess()
                     }
                 }
+            }
         } catch (e: Exception) {
             loginFail()
         }
