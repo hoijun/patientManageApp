@@ -2,6 +2,7 @@ package com.example.patientManageApp.presentation.screen.main.calendarPage
 
 import android.annotation.SuppressLint
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +11,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
@@ -128,6 +131,7 @@ private fun CalendarScreen(
     var isMoveBottomNavi by remember { mutableStateOf(isMoveBottom) }
     var thisMonth by remember { mutableStateOf(currentMonth) }
     var selectedDate by remember { mutableStateOf(selectedDay) }
+    val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     val koreanDateFormatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")
     val calendarState = rememberCalendarState(
@@ -168,7 +172,13 @@ private fun CalendarScreen(
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()
+    LaunchedEffect(selectedDate) {
+        listState.scrollToItem(0)
+    }
+
+    Column(
+        modifier = Modifier
+        .fillMaxSize()
         .verticalScroll(rememberScrollState())
     ) {
         ScreenHeader(pageName = "이상 행동 달력")
@@ -219,9 +229,9 @@ private fun CalendarScreen(
         )
 
         OccurrencesColumn(
-            modifier = Modifier
-                .weight(1f),
-            occurrences = occurrenceDays[selectedDate.format(formatter)] ?: emptyList()
+            modifier = Modifier.weight(1f),
+            occurrences = occurrenceDays[selectedDate.format(formatter)] ?: emptyList(),
+            state = listState
         ) {
             onItemClick((selectedDate.format(koreanDateFormatter) ?: "") + "/" + it)
         }
@@ -229,7 +239,12 @@ private fun CalendarScreen(
 }
 
 @Composable
-private fun OccurrencesColumn(modifier: Modifier, occurrences: List<OccurrencesEntity>, onItemClick: (time: String) -> Unit) {
+private fun OccurrencesColumn(
+    modifier: Modifier,
+    occurrences: List<OccurrencesEntity>,
+    state : LazyListState,
+    onItemClick: (time: String) -> Unit
+) {
     if (occurrences.isEmpty()) {
         Box(
             modifier = modifier
@@ -244,10 +259,11 @@ private fun OccurrencesColumn(modifier: Modifier, occurrences: List<OccurrencesE
         }
     } else {
         LazyColumn(
+            state = state,
             modifier = modifier
                 .padding(top = 20.dp, start = 25.dp, bottom = 2.5.dp),
             contentPadding = PaddingValues(top = 5.dp),
-            verticalArrangement = Arrangement.spacedBy(40.dp)
+            verticalArrangement = Arrangement.spacedBy(40.dp),
         ) {
             items(
                 occurrences.size,
