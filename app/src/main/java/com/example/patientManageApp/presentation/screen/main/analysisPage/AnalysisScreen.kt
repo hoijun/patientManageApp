@@ -194,7 +194,7 @@ private fun AnalysisChart(
                 margins.set(2f)
                 color = Color.Black.toArgb()
             },
-            axisValuesOverrider = AxisValuesOverrider.fixed(minY = 0f, maxY = 15f)
+            axisValuesOverrider = AxisValuesOverrider.fixed(minY = 0f, maxY = 30f)
         ),
         chartModelProducer = chartEntryModelProducer,
         startAxis = rememberStartAxis(

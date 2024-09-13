@@ -136,7 +136,6 @@ private fun HomeScreenHeader(cameraCount: Int, onSettingBtnClick: () -> Unit) {
 @Composable
 private fun CameraItem(cameraList: List<CameraEntity>, onSettingBtnClick: (cameraEntity: CameraEntity) -> Unit) {
     val context = LocalContext.current
-    val interactionSource = remember { MutableInteractionSource() }
     LazyColumn(modifier = Modifier.padding(top = 10.dp)) {
         items(items = cameraList, key = { it.name }) {
             Surface(modifier = Modifier
@@ -179,10 +178,10 @@ private fun CameraItem(cameraList: List<CameraEntity>, onSettingBtnClick: (camer
                                 cameraList[cameraList.indexOf(it)].backGroundImg
                             )),
                             contentDescription = "thumbnail",
+                            contentScale = ContentScale.FillWidth,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(200.dp),
-                            contentScale = ContentScale.FillWidth
                         )
 
                         Button(
@@ -198,13 +197,8 @@ private fun CameraItem(cameraList: List<CameraEntity>, onSettingBtnClick: (camer
                                 contentColor = Color.Black
                             ),
                             modifier = Modifier
-                                .align(Alignment.Center)
-                                .indication(
-                                    interactionSource = interactionSource,
-                                    rememberRipple(color = Color(0xfff1f3f5))
-                                ),
+                                .align(Alignment.Center),
                             shape = RoundedCornerShape(20.dp),
-                            interactionSource = interactionSource
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
@@ -236,6 +230,10 @@ private fun getBackGroundImage(name: String): Int {
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen(listOf(CameraEntity("test", "test", "livingRoom")),
+    HomeScreen(
+        listOf(
+            CameraEntity("test", "test", "livingRoom"),
+            CameraEntity("test1", "test1", "livingRoom")
+        ),
         onSettingBtnClick = {})
 }
