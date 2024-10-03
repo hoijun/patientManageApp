@@ -1,16 +1,19 @@
 package com.example.patientManageApp.presentation.screen.main.userProfilePage
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.patientManageApp.domain.entity.UserEntity
 import com.example.patientManageApp.domain.usecase.UseCases
 import com.example.patientManageApp.domain.utils.onError
 import com.example.patientManageApp.domain.utils.onSuccess
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.firebase.messaging.FirebaseMessaging
 import com.kakao.sdk.user.UserApiClient
 import com.navercorp.nid.NaverIdLoginSDK
+import com.navercorp.nid.oauth.NidOAuthLogin
+import com.navercorp.nid.oauth.OAuthLoginCallback
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,7 +32,7 @@ class UserProfileViewModel@Inject constructor(private val useCase: UseCases): Vi
             .onError { isError() }
     }
 
-    fun logout() = viewModelScope.launch {
+    fun logout(googleSignInClient: GoogleSignInClient?) = viewModelScope.launch {
         isLoading()
         val auth = Firebase.auth
         val email = auth.currentUser?.email
@@ -39,36 +42,120 @@ class UserProfileViewModel@Inject constructor(private val useCase: UseCases): Vi
             return@launch
         }
 
-        Log.d("savepoint", email)
-
         try {
             if (email.contains("naver.com")) {
-                NaverIdLoginSDK.logout()
-                auth.signOut()
-                isLogoutSuccess()
+                useCase.updateFcmToken("").onSuccess {
+                    FirebaseMessaging.getInstance().deleteToken().addOnSuccessListener {
+                        NaverIdLoginSDK.logout()
+                        auth.signOut()
+                        isLogoutSuccess()
+                    }.addOnFailureListener {
+                        isError()
+                    }
+                }.onError {
+                    isError()
+                }
             } else if (email.contains("kakao.com")) {
                 UserApiClient.instance.logout kakaoLogin@{ error ->
                     if(error != null) {
                         isError()
                         return@kakaoLogin
                     }
-                    auth.signOut()
-                    isLogoutSuccess()
+                    viewModelScope.launch {
+                        useCase.updateFcmToken("").onSuccess {
+                            FirebaseMessaging.getInstance().deleteToken().addOnSuccessListener {
+                                auth.signOut()
+                                isLogoutSuccess()
+                            }.addOnFailureListener {
+                                isError()
+                            }
+                        }.onError {
+                            isError()
+                        }
+                    }
                 }
             } else if (email.contains("gmail.com")) {
-                auth.signOut()
-                isLogoutSuccess()
+                googleSignInClient?.signOut()?.addOnCompleteListener {
+                    if (!it.isSuccessful) {
+                        return@addOnCompleteListener
+                    }
+
+                    viewModelScope.launch {
+                        useCase.updateFcmToken("").onSuccess {
+                            FirebaseMessaging.getInstance().deleteToken().addOnSuccessListener {
+                                auth.signOut()
+                                isLogoutSuccess()
+                            }.addOnFailureListener {
+                                isError()
+                            }
+                        }.onError {
+                            isError()
+                        }
+                    }
+                }
             }
         } catch (e: Exception) {
             isError()
         }
     }
 
-    fun withdrawal() = viewModelScope.launch {
+    fun withdrawal(googleSignInClient: GoogleSignInClient?) = viewModelScope.launch {
         isLoading()
         useCase.removeUserData()
-            .onSuccess { isWithdrawalSuccess() }
-            .onError { isError() }
+            .onSuccess {
+                useCase.removeOccurrenceJPGAndMP4()
+
+                val auth = Firebase.auth
+                val email = auth.currentUser?.email
+
+                if (email == null) {
+                    isError()
+                    return@onSuccess
+                }
+
+                if (email.contains("naver.com")) {
+                    NidOAuthLogin().callDeleteTokenApi(object : OAuthLoginCallback {
+                        override fun onError(errorCode: Int, message: String) {
+                            onFailure(errorCode, message)
+                        }
+
+                        override fun onFailure(httpStatus: Int, message: String) {
+                            isError()
+                        }
+
+                        override fun onSuccess() {
+                            auth.currentUser!!.delete().addOnSuccessListener {
+                                isWithdrawalSuccess()
+                            }.addOnFailureListener {
+                                isError()
+                            }
+                        }
+                    })
+
+                } else if (email.contains("kakao.com")) {
+                    UserApiClient.instance.unlink { error ->
+                        if (error != null) {
+                            isError()
+                        } else {
+                            auth.currentUser!!.delete().addOnSuccessListener {
+                                isWithdrawalSuccess()
+                            }.addOnFailureListener {
+                                isError()
+                            }
+                        }
+                    }
+                } else if (email.contains("gmail.com")) {
+                    googleSignInClient?.revokeAccess()?.addOnSuccessListener {
+                        auth.currentUser!!.delete().addOnSuccessListener {
+                            isWithdrawalSuccess()
+                        }.addOnFailureListener {
+                            isError()
+                        }
+                    }?.addOnFailureListener {
+                        isError()
+                    }
+                }
+            }.onError { isError() }
     }
 
     fun isIdle() {

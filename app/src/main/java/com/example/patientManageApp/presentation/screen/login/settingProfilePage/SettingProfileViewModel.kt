@@ -1,5 +1,6 @@
 package com.example.patientManageApp.presentation.screen.login.settingProfilePage
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.patientManageApp.domain.entity.PatientEntity
@@ -11,6 +12,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
 import com.kakao.sdk.user.UserApiClient
 import com.navercorp.nid.oauth.NidOAuthLogin
 import com.navercorp.nid.profile.NidProfileCallback
@@ -128,6 +130,26 @@ class SettingProfileViewModel @Inject constructor(private val useCases: UseCases
         val userResult = CompletableDeferred<Boolean>()
         val patientResult = CompletableDeferred<Boolean>()
         val termResult = CompletableDeferred<Boolean>()
+        val tokenResult = CompletableDeferred<Boolean>()
+
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                tokenResult.complete(false)
+                return@addOnCompleteListener
+            }
+
+            val token = task.result
+
+            Log.d("token", token)
+
+            viewModelScope.launch {
+                useCases.updateFcmToken(token)
+                    .onSuccess { tokenResult.complete(true) }
+                    .onError { tokenResult.complete(false) }
+            }
+        }.addOnFailureListener {
+            tokenResult.complete(false)
+        }
 
         useCases.updateUserData(UserEntity(name = name, birth = birth))
             .onSuccess { userResult.complete(true) }
@@ -139,7 +161,7 @@ class SettingProfileViewModel @Inject constructor(private val useCases: UseCases
             .onSuccess { termResult.complete(true) }
             .onError { termResult.complete(false) }
 
-        if (!userResult.await() && !patientResult.await() && !termResult.await()) {
+        if (!userResult.await() && !patientResult.await() && !termResult.await() && !tokenResult.await()) {
             isError()
         } else {
             isSuccess()

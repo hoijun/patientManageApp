@@ -1,8 +1,6 @@
 package com.example.patientManageApp.presentation.navigation.mainNavi
 
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -10,32 +8,37 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.patientManageApp.domain.entity.CameraEntity
 import com.example.patientManageApp.presentation.AppScreen
 import com.example.patientManageApp.presentation.screen.main.MainViewModel
 import com.example.patientManageApp.presentation.screen.main.analysisPage.AnalysisScreen
 import com.example.patientManageApp.presentation.screen.main.calendarPage.CalendarScreen
-import com.example.patientManageApp.presentation.screen.main.calendarPage.DetailCalendarInfoScreen
+import com.example.patientManageApp.presentation.screen.main.detailCalendarInfoPage.DetailCalendarInfoScreen
 import com.example.patientManageApp.presentation.screen.main.homePage.HomeScreen
 import com.example.patientManageApp.presentation.screen.main.myPagePage.MyPageScreen
 import com.example.patientManageApp.presentation.screen.main.patientProfilePage.PatientProfileScreen
 import com.example.patientManageApp.presentation.screen.main.settingCameraPage.SettingCameraScreen
 import com.example.patientManageApp.presentation.screen.main.userProfilePage.UserProfileScreen
+import com.google.gson.Gson
 
 @Composable
-fun MainNavHost(navController: NavHostController, startDestination: String, viewModel: MainViewModel) {
+fun MainNavHost(
+    navController: NavHostController,
+    startDestination: String,
+    viewModel: MainViewModel
+) {
     NavHost(
         modifier = Modifier.fillMaxSize(),
         navController = navController,
         startDestination = startDestination,
         route = "main",
         enterTransition = {
-            val currentIndex = initialState.destination.route?.let { getIndexForRoute(it)} ?: -1
-            val targetIndex = targetState.destination.route?.let { getIndexForRoute(it) } ?: -1
+            val currentIndex = initialState.destination.route?.let { getIndexForRoute(it.split("/").first())} ?: -1
+            val targetIndex = targetState.destination.route?.let { getIndexForRoute(it.split("/").first()) } ?: -1
             if (currentIndex == -1) {
-                EnterTransition.None
-            }
-            else if (targetIndex == -1) {
-                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up, tween(250))
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right, tween(150))
+            } else if (targetIndex == -1) {
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left, tween(150))
             }
             else if (currentIndex < targetIndex) {
                 slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left, tween(150))
@@ -44,10 +47,13 @@ fun MainNavHost(navController: NavHostController, startDestination: String, view
             }
         },
         exitTransition = {
-            val currentIndex = initialState.destination.route?.let { getIndexForRoute(it) } ?: -1
+            val currentIndex = initialState.destination.route?.let { getIndexForRoute(it.split("/").first()) } ?: -1
             val targetIndex = targetState.destination.route?.let { getIndexForRoute(it) } ?: -1
-            if (currentIndex == -1 || targetIndex == -1) {
-                ExitTransition.None
+            if (currentIndex == -1) {
+                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right, tween(150))
+            }
+            else if (targetIndex == -1) {
+                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left, tween(150))
             }
             else if (targetIndex > currentIndex) {
                 slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left, tween(150))
@@ -60,20 +66,28 @@ fun MainNavHost(navController: NavHostController, startDestination: String, view
             HomeScreen(navController, viewModel)
         }
 
-        composable(route = AppScreen.SettingCamera.route) {
-            SettingCameraScreen(navController = navController)
+        composable(route = AppScreen.SettingCamera.route + "/{cameraEntity}") { backstackEntry ->
+            val cameraEntityJsonString = backstackEntry.arguments?.getString("cameraEntity")
+            val cameraEntity = Gson().fromJson(cameraEntityJsonString, CameraEntity::class.java)
+            SettingCameraScreen(navController, cameraEntity, viewModel)
         }
 
         composable(route = AppScreen.Calendar.route) {
-            CalendarScreen(navController)
+            CalendarScreen(navController = navController, mainViewModel = viewModel)
         }
 
-        composable(route = AppScreen.DetailCalendarInfo.route) {
-            DetailCalendarInfoScreen(navController)
+        composable(route = AppScreen.Calendar.route + "/{date}") {
+            val date = it.arguments?.getString("date") ?: "bottom"
+            CalendarScreen(navController, date, viewModel)
+        }
+
+        composable(route = AppScreen.DetailCalendarInfo.route + "/{dateAndTime}") { backstackEntry ->
+            val dateAndTime = backstackEntry.arguments?.getString("dateAndTime") ?: "0000년 00월 00일/00:00"
+            DetailCalendarInfoScreen(navController, dateAndTime)
         }
 
         composable(route = AppScreen.Analysis.route) {
-            AnalysisScreen()
+            AnalysisScreen(viewModel)
         }
 
         composable(route = AppScreen.MyPage.route) {

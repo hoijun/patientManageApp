@@ -1,6 +1,7 @@
 package com.example.patientManageApp.presentation.screen.login.settingProfilePage
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -82,7 +83,6 @@ fun SettingProfileProfile(loginSns: String?, viewModel: SettingProfileViewModel 
                         duration = SnackbarDuration.Short
                     )
                 }
-
             }
 
             SettingProfileUiState.Loading -> {
@@ -103,20 +103,7 @@ fun SettingProfileProfile(loginSns: String?, viewModel: SettingProfileViewModel 
                 return@SettingProfileScreen
             }
             if (loginSns == "google") {
-                val token = BuildConfig.Google_WebClient_Id
-                val googleSignInOptions = GoogleSignInOptions
-                    .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                    .requestIdToken(token)
-                    .requestEmail()
-                    .build()
-                val googleSignInClient = GoogleSignIn.getClient(context, googleSignInOptions)
-                viewModel.googleSignUp(
-                    userName,
-                    userBirth,
-                    patientName,
-                    patientBirth,
-                    googleSignInClient
-                )
+                googleSingUp(userName, userBirth, patientName, patientBirth, viewModel, context)
             } else {
                 viewModel.singUp(loginSns, userName, userBirth, patientName, patientBirth)
             }
@@ -265,6 +252,24 @@ private fun SubmitButton(enabled: Boolean, onClick: () -> Unit) {
     ) {
         Text("다음으로")
     }
+}
+
+private fun googleSingUp(
+    userName: String,
+    userBirth: String,
+    patientName: String,
+    patientBirth: String,
+    viewModel: SettingProfileViewModel,
+    context: Context
+) {
+    val token = BuildConfig.Google_WebClient_Id
+    val googleSignInOptions = GoogleSignInOptions
+        .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken(token)
+        .requestEmail()
+        .build()
+    val googleSignInClient = GoogleSignIn.getClient(context, googleSignInOptions)
+    viewModel.googleSignUp(userName, userBirth, patientName, patientBirth, googleSignInClient)
 }
 
 @Preview(showBackground = true)

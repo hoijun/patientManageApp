@@ -13,8 +13,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,7 +39,7 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 @Composable
-fun Day(day: CalendarDay, isSelected: Boolean, onClick: (CalendarDay) -> Unit) {
+fun Day(day: CalendarDay, isSelected: Boolean, occurrenceDay: List<Int>, onClick: (CalendarDay) -> Unit) {
     Box(
         modifier = Modifier
             .aspectRatio(1f)
@@ -69,17 +69,16 @@ fun Day(day: CalendarDay, isSelected: Boolean, onClick: (CalendarDay) -> Unit) {
             fontSize = 11.sp
         )
 
-        Canvas(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.Center)
-        ) {
-            val path = Path().apply {
-                moveTo(15f, 0f)
-                lineTo(size.width - 15f, 0f)
-            }
-
-            if (day.date.dayOfMonth == 10) {
+        if (day.date.dayOfYear in occurrenceDay) {
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.Center)
+            ) {
+                val path = Path().apply {
+                    moveTo(15f, 0f)
+                    lineTo(size.width - 15f, 0f)
+                }
                 drawPath(
                     path = path,
                     color = Color.Black,
@@ -115,7 +114,7 @@ fun MonthHeader(month: YearMonth, onLeftClick: () -> Unit, onRightClick: () -> U
         modifier = Modifier
             .fillMaxWidth()
             .height(intrinsicSize = IntrinsicSize.Min)
-            .padding(start = 15.dp, end = 15.dp, top = 10.dp, bottom = 5.dp),
+            .padding(start = 15.dp, end = 15.dp, top = 10.dp, bottom = 10.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Icon(

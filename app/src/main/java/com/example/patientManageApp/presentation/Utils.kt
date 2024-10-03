@@ -22,18 +22,27 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Text
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.AlertDialog
+import androidx.compose.material3.Text
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -47,9 +56,12 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
@@ -58,9 +70,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -98,7 +112,7 @@ fun ScreenHeader(pageName: String) {
 @Composable
 fun SubScreenHeader(pageName: String, onBackBtnClick: () -> Unit) {
     Column {
-        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(painter = painterResource(id = R.drawable.arrow_back),
                 contentDescription = "arrow_back",
                 modifier = Modifier
@@ -113,20 +127,9 @@ fun SubScreenHeader(pageName: String, onBackBtnClick: () -> Unit) {
                 textAlign = TextAlign.Start,
                 modifier = Modifier
                     .padding(vertical = 20.dp, horizontal = 5.dp)
-                    .fillMaxWidth()
             )
         }
-        Canvas(
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            drawLine(
-                Color(0xFFc0c2c4),
-                start = Offset(0f, 0f),
-                end = Offset(size.width, 0f),
-                strokeWidth = 1.dp.toPx()
-            )
-        }
+        CustomDivider(horizontal = 0.dp, vertical = 0.dp)
     }
 }
 
@@ -288,6 +291,7 @@ fun DateBottomSheet(modifier: Modifier, closeSheet: (birth: String) -> Unit) {
 
 @Composable
 fun LoadingDialog() {
+    BackHandler(enabled = true) { }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -347,6 +351,197 @@ fun CustomDivider(horizontal: Dp, vertical: Dp) {
 }
 
 @Composable
+fun WarningDialog(
+    title: String,
+    description: String,
+    onDismissRequest: () -> Unit,
+    onClickConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = { onDismissRequest() },
+        title = {
+            Text(
+                text = title,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+            )
+        },
+        text = {
+            Text(
+                text = description,
+                fontSize = 15.sp,
+            )
+        },
+        buttons = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                TextButton(
+                    onClick = { onClickConfirm() }
+                ) {
+                    Text("확인")
+                }
+                TextButton(
+                    onClick = { onDismissRequest() }
+                ) {
+                    Text("취소")
+                }
+            }
+        },
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
+        ),
+        shape = RoundedCornerShape(10.dp),
+    )
+}
+
+@Composable
+fun CustomVerticalDivider(iconHeight: Float) {
+    Canvas(
+        modifier = Modifier
+            .padding(start = 10.dp)
+    ) {
+        val path = Path().apply {
+            moveTo(0f, 0f)
+            lineTo(0f, iconHeight)
+        }
+        drawPath(
+            path = path,
+            color = Color.Black,
+            style = Stroke(
+                3.dp.toPx(),
+                cap = StrokeCap.Round
+            )
+        )
+    }
+}
+
+@Composable
+fun WithdrawalWarningDialog(
+    title: String,
+    description: String,
+    onDismissRequest: () -> Unit,
+    onClickConfirm: () -> Unit
+) {
+    val charSet = ('a'..'z') + ('0'..'9')
+    val randomString = List(8) { charSet.random() }.joinToString("")
+    var input by remember { mutableStateOf("") }
+    var isInputCorrect by remember { mutableStateOf(true) }
+    AlertDialog(
+        onDismissRequest = { onDismissRequest() },
+        title = {
+            Text(
+                text = title,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = description,
+                    fontSize = 15.sp,
+                    modifier = Modifier.padding(bottom = 15.dp)
+                )
+
+                Text(
+                    text = randomString,
+                    fontSize = 15.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Color.LightGray.copy(0.2f),
+                            RoundedCornerShape(5.dp))
+                        .padding(10.dp),
+                    textAlign = TextAlign.Center
+                )
+
+                OutlinedTextField(
+                    value = input,
+                    onValueChange = {
+                        input = it
+                    },
+                    modifier = Modifier.padding(top = 10.dp),
+                    singleLine = true,
+                    maxLines = 1,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.DarkGray,
+                        unfocusedBorderColor = Color.DarkGray,
+                        disabledBorderColor = Color.LightGray,
+                        disabledTextColor = Color.LightGray
+                    )
+                )
+
+                if(!isInputCorrect) {
+                    Text(
+                        text = "입력이 틀렸습니다.",
+                        color = Color.Red,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(top = 5.dp)
+                    )
+                }
+            }
+        },
+        buttons = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                TextButton(
+                    onClick = {
+                        if (input == randomString) {
+                            isInputCorrect = true
+                            onClickConfirm()
+                        } else {
+                            isInputCorrect = false
+                        }
+                    }
+                ) {
+                    Text("확인", color = Color.DarkGray)
+                }
+                TextButton(
+                    onClick = { onDismissRequest() }
+                ) {
+                    Text("취소", color = Color.DarkGray)
+                }
+            }
+        },
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
+        ),
+        shape = RoundedCornerShape(10.dp),
+    )
+}
+
+@Composable
+fun ShadowDivider() {
+    Surface(modifier = Modifier
+        .fillMaxWidth()
+        .height(15.dp)
+        .innerShadow(
+            RectangleShape,
+            color = Color.Black.copy(0.3f),
+            offsetY = (-2).dp,
+            offsetX = (-2).dp
+        )
+        .innerShadow(
+            RectangleShape,
+            color = Color.Black.copy(0.3f),
+            offsetY = 2.dp,
+            offsetX = 2.dp
+        ),
+        color = Color(0xFFc0c2c4)
+    ) { }
+}
+
+@Composable
 fun Modifier.noRippleClickable(
     enabled: Boolean = true,
     onClick: () -> Unit
@@ -360,14 +555,6 @@ fun Modifier.noRippleClickable(
     onClick()
 }
 
-@Composable
-inline fun <reified T: ViewModel> NavBackStackEntry.sharedViewModel(navController: NavHostController): T {
-    val navGraphRoute = destination.parent?.route ?: return hiltViewModel()
-    val parentEntry = remember(this) {
-        navController.getBackStackEntry(navGraphRoute)
-    }
-    return hiltViewModel(parentEntry)
-}
 
 fun moveScreen(navController: NavHostController, route: String) {
     navController.navigate(route) {
@@ -377,4 +564,24 @@ fun moveScreen(navController: NavHostController, route: String) {
         launchSingleTop = true
         restoreState = true
     }
+}
+
+fun moveScreenWithArgs(navController: NavHostController, route: String) {
+    navController.navigate(route) {
+        navController.graph.startDestinationRoute?.let {
+            popUpTo(it) { saveState = true }
+        }
+        launchSingleTop = true
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DefaultPreview() {
+    WithdrawalWarningDialog(
+        title = "title",
+        description = "description",
+        onDismissRequest = {},
+        onClickConfirm = {}
+    )
 }

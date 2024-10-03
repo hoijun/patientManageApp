@@ -52,6 +52,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetCustomCredentialOption
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.GetCredentialException
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.patientManageApp.BuildConfig
 import com.example.patientManageApp.presentation.MainActivity
@@ -62,12 +67,14 @@ import com.example.patientManageApp.presentation.ScreenHeader
 import com.example.patientManageApp.presentation.noRippleClickable
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.user.UserApiClient
 import com.navercorp.nid.NaverIdLoginSDK
 import com.navercorp.nid.oauth.OAuthLoginCallback
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "CoroutineCreationDuringComposition")
@@ -75,17 +82,12 @@ import kotlinx.coroutines.launch
 fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), movePage: (sns: String) -> Unit) {
     BackOnPressed()
 
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) {
-        viewModel.googleLogin(activityResult = it)
-    }
-
     var snsLoginState by remember { mutableStateOf("") }
 
     val loginState: LoginUiState by viewModel.loginUiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     when (loginState) {
         LoginUiState.SingIn -> {
@@ -130,7 +132,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel(), movePage: (sns: Str
             snsLoginState = "naver"
         },
         onGoogleLogin = {
-            googleLogin(context, viewModel, launcher)
+            googleLogin(context, coroutineScope, viewModel)
             snsLoginState = "google"
         }
     )
@@ -308,21 +310,29 @@ private fun naverLogin(context: Context, viewModel: LoginViewModel) {
     NaverIdLoginSDK.authenticate(context, naverLoginCallback)
 }
 
-private fun googleLogin(
-    context: Context,
-    viewModel: LoginViewModel,
-    launcher: ManagedActivityResultLauncher<Intent, ActivityResult>
-) {
+private fun googleLogin(context: Context, coroutineScope: CoroutineScope, viewModel: LoginViewModel) {
     viewModel.isLoading()
-    val token = BuildConfig.Google_WebClient_Id
-    val googleSignInOptions = GoogleSignInOptions
-        .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-        .requestIdToken(token)
-        .requestEmail()
+    val credentialManager = CredentialManager.create(context)
+    val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
+        .setFilterByAuthorizedAccounts(false)
+        .setServerClientId(BuildConfig.Google_WebClient_Id)
         .build()
 
-    val googleSignInClient = GoogleSignIn.getClient(context, googleSignInOptions)
-    launcher.launch(googleSignInClient.signInIntent)
+    val request: GetCredentialRequest = GetCredentialRequest.Builder()
+        .addCredentialOption(googleIdOption)
+        .build()
+
+    coroutineScope.launch {
+        try {
+            val result = credentialManager.getCredential(
+                request = request,
+                context = context
+            )
+            viewModel.googleSignIn(result)
+        } catch (e: GetCredentialException) {
+            viewModel.loginFail()
+        }
+    }
 }
 
 @Preview(showBackground = true)
