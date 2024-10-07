@@ -117,7 +117,7 @@ private fun HomeScreenHeader(cameraCount: Int, onSettingBtnClick: () -> Unit) {
                         interactionSource = interactionSource,
                         rememberRipple(color = Color(0xfff1f3f5))
                     ),
-                shape = RoundedCornerShape(10.dp),
+                shape = RoundedCornerShape(15.dp),
                 interactionSource = interactionSource
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {

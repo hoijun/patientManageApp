@@ -167,7 +167,7 @@ private fun SettingCameraScreen(
             if (cameraIndex == -1) {
                 cameraEntity.name != cameraName && cameraEntity.rtspAddress != rtspAddress && backGroundImg != cameraEntity.backGroundImg
             } else {
-                ( cameraEntity.name != cameraName || cameraEntity.rtspAddress != rtspAddress || backGroundImg != cameraEntity.backGroundImg ) && ( cameraName != "" && rtspAddress != "")
+                (cameraEntity.name != cameraName || cameraEntity.rtspAddress != rtspAddress || backGroundImg != cameraEntity.backGroundImg ) && ( cameraName != "" && rtspAddress != "")
             }
         }
     }

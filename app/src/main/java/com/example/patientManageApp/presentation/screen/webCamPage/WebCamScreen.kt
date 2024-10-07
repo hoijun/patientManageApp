@@ -1,9 +1,7 @@
 package com.example.patientManageApp.presentation.screen.webCamPage
 
 import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.BackHandler
-import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,12 +36,10 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
-import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.rtsp.RtspMediaSource
-import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.example.patientManageApp.R
@@ -167,7 +163,7 @@ private fun CamScreen(
     onRefreshPressed: () -> Unit
 ) {
     val isEnabledRefresh by remember(playerState) {
-        mutableStateOf(playerState == PlayerState.ERROR)
+        mutableStateOf(playerState != PlayerState.BUFFERING)
     }
 
     Box(
@@ -207,8 +203,7 @@ private fun CamScreen(
                         .align(Alignment.Center)
                         .background(Color.White)
                         .fillMaxWidth(0.6f)
-                        .padding(30.dp)
-                        .rotate(180f),
+                        .padding(30.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text("오류 발생", color = Color.Red)
@@ -231,16 +226,16 @@ private fun CamScreen(
         }
 
         IconButton(
-            onClick = { onBackPressed() },
+            onClick = { onRefreshPressed() },
+            enabled = isEnabledRefresh,
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(bottom = 10.dp, end = 10.dp)
-                .rotate(180f)
+                .align(Alignment.TopEnd)
+                .padding(top = 10.dp, end = 10.dp)
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.arrow_back),
+                painter = painterResource(id = R.drawable.refresh),
                 contentDescription = "뒤로 가기",
-                tint = Color.White
+                tint = if(isEnabledRefresh) Color.White else Color.White.copy(0.5f)
             )
         }
 
@@ -250,34 +245,23 @@ private fun CamScreen(
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 20.dp)
-                .rotate(180f)
+                .align(Alignment.TopCenter)
+                .padding(top = 20.dp)
         )
 
         IconButton(
-            onClick = { onRefreshPressed() },
-            enabled = isEnabledRefresh,
+            onClick = { onBackPressed() },
             modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(bottom = 10.dp, start = 10.dp)
-                .rotate(180f)
+                .align(Alignment.TopStart)
+                .padding(top = 10.dp, start = 10.dp)
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.refresh),
+                painter = painterResource(id = R.drawable.arrow_back),
                 contentDescription = "뒤로 가기",
-                tint = if(isEnabledRefresh) Color.White else Color.White.copy(0.5f)
+                tint = Color.White
             )
         }
     }
-}
-
-@OptIn(UnstableApi::class)
-private fun createMediaSource(rtspUrl: String): MediaSource {
-    return RtspMediaSource.Factory()
-        .setForceUseRtpTcp(true)
-        .setDebugLoggingEnabled(true)
-        .createMediaSource(MediaItem.fromUri(Uri.parse(rtspUrl)))
 }
 
 @Preview(showBackground = true)

@@ -108,6 +108,8 @@ fun AnalysisScreen(mainViewModel: MainViewModel) {
                 groupByMonth[previousMonth.toString()] ?: emptyList()
             ),
             groupByWeekOfMonth = groupByWeekOfMonth,
+            maxOccurrenceMap = getMaxAndMinOccurrenceCount(groupByMonth[currentMonth.toString()] ?: emptyList()).first,
+            minOccurrenceMap = getMaxAndMinOccurrenceCount(groupByMonth[currentMonth.toString()] ?: emptyList()).second,
             onLeftClick = {
                 currentMonth = currentMonth.previousMonth
             },
@@ -132,6 +134,8 @@ private fun AnalysisScreen(
     currentMonthOccurrenceCount: Int,
     previousMonthOccurrenceCount: Int,
     groupByWeekOfMonth: Map<String, List<MutableMap.MutableEntry<String, List<OccurrencesEntity>>>>,
+    maxOccurrenceMap: Map<String, Int>,
+    minOccurrenceMap: Map<String, Int>,
     onLeftClick: () -> Unit,
     onRightClick: () -> Unit
 ) {
@@ -156,6 +160,22 @@ private fun AnalysisScreen(
             "지난달 대비 증가 횟수",
             "${currentMonthOccurrenceCount - previousMonthOccurrenceCount}회"
         )
+
+        if (maxOccurrenceMap.isNotEmpty()) {
+            SetAnalysisScreenInfo(
+                R.drawable.clock_loader_90,
+                "최다 이상 행동 횟수: ${maxOccurrenceMap.keys.joinToString(", ")}",
+                "${maxOccurrenceMap.values.max()}회"
+            )
+        }
+
+        if (minOccurrenceMap.isNotEmpty() && maxOccurrenceMap.values.max() != minOccurrenceMap.values.min()) {
+            SetAnalysisScreenInfo(
+                R.drawable.clock_loader_10,
+                "최소 이상 행동 횟수: ${minOccurrenceMap.keys.joinToString(", ")}",
+                "${minOccurrenceMap.values.min()}회"
+            )
+        }
     }
 }
 
@@ -254,7 +274,7 @@ private fun SetAnalysisScreenInfo(icon: Int, count: String, increment: String) {
     ) {
         var iconHeight by remember { mutableFloatStateOf(0f) }
         Icon(painter = painterResource(id = icon),
-            contentDescription = "arrow_up",
+            contentDescription = "infoIcon",
             modifier = Modifier.onGloballyPositioned {
                 iconHeight = it.size.height.toFloat()
             })
@@ -276,6 +296,30 @@ private fun getOccurrenceCount(occurrenceList: List<MutableMap.MutableEntry<Stri
     return count
 }
 
+private fun getMaxAndMinOccurrenceCount(occurrenceList: List<MutableMap.MutableEntry<String, List<OccurrencesEntity>>>): Pair<Map<String, Int>, Map<String, Int>> {
+    val occurrenceMap = hashMapOf<String, Int>()
+    occurrenceList.forEach {
+        it.value.forEach { occurrence ->
+            if (!occurrenceMap.containsKey(occurrence.kind)) {
+                occurrenceMap[occurrence.kind] = 0
+            }
+            occurrenceMap[occurrence.kind] = (occurrenceMap[occurrence.kind])!! + 1
+        }
+    }
+
+    if (occurrenceMap.isNotEmpty()) {
+        val minValue = occurrenceMap.values.min()
+        val maxValue = occurrenceMap.values.max()
+
+        val maxEntries = occurrenceMap.filter { it.value == maxValue }
+        val minEntries = occurrenceMap.filter { it.value == minValue }
+
+        return Pair(maxEntries, minEntries)
+    } else {
+        return Pair(mapOf(), mapOf())
+    }
+}
+
 
 @Preview(showBackground = true)
 @Composable
@@ -283,16 +327,16 @@ private fun AnalysisScreenPreview() {
     val occurrenceDays = hashMapOf(
         "2024-08-14" to listOf(
             OccurrencesEntity("09:00:24", "낙상"),
-            OccurrencesEntity("10:00:53", "식사"),
-            OccurrencesEntity("23:00:23", "낙상")
+            OccurrencesEntity("23:00:23", "낙상"),
+            OccurrencesEntity("23:00:53", "화재"),
+            OccurrencesEntity("23:00:54", "화재")
         ),
         "2024-08-24" to listOf(
             OccurrencesEntity("11:00:24", "낙상"),
             OccurrencesEntity("21:00:53", "낙상")
         ),
         "2024-07-15" to listOf(
-            OccurrencesEntity("09:00:34", "낙상"),
-            OccurrencesEntity("20:00:43", "낙상")
+            OccurrencesEntity("09:00:34", "낙상")
         )
     )
 
@@ -319,6 +363,8 @@ private fun AnalysisScreenPreview() {
             groupByMonth[previousMonth.toString()] ?: emptyList()
         ),
         groupByWeekOfMonth = groupByWeekOfMonth,
+        maxOccurrenceMap = getMaxAndMinOccurrenceCount(groupByMonth[currentMonth.toString()] ?: emptyList()).first,
+        minOccurrenceMap = getMaxAndMinOccurrenceCount(groupByMonth[currentMonth.toString()] ?: emptyList()).second,
         onLeftClick = {
             currentMonth = currentMonth.previousMonth
         },

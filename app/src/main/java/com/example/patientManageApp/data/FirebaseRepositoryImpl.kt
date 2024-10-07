@@ -1,14 +1,12 @@
 package com.example.patientManageApp.data
 
 import android.net.Uri
-import android.util.Log
 import com.example.patientManageApp.domain.entity.CameraEntity
 import com.example.patientManageApp.domain.entity.OccurrencesEntity
 import com.example.patientManageApp.domain.entity.PatientEntity
 import com.example.patientManageApp.domain.entity.UserEntity
 import com.example.patientManageApp.domain.repository.FirebaseRepository
 import com.example.patientManageApp.domain.utils.FirebaseApiResult
-import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError

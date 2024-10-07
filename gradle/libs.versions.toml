@@ -30,6 +30,8 @@ lifecycleViewmodelKtxVersion = "2.8.4"
 material = "1.6.8"
 media3ExoplayerRtsp = "1.4.0"
 media3Ui = "1.4.0"
+mockk = "1.13.12"
+mockkAndroid = "1.13.12"
 navigationCompose = "2.7.7"
 oauthJdk8 = "5.9.1"
 playServicesAuth = "21.2.0"
@@ -37,6 +39,7 @@ runtimeLivedata = "1.6.8"
 v2User = "2.20.3"
 views = "1.15.0"
 firebaseDatabase = "21.0.0"
+testng = "6.9.6"
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
@@ -82,11 +85,14 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.8.1" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockkAndroid" }
 naver-oauth-jdk8 = { module = "com.navercorp.nid:oauth-jdk8", version.ref = "oauthJdk8" }
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 kakao-v2-user = { module = "com.kakao.sdk:v2-user", version.ref = "v2User" }
 views = { module = "com.patrykandpatrick.vico:views", version.ref = "views" }
 firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
+testng = { group = "org.testng", name = "testng", version.ref = "testng" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
