@@ -203,8 +203,7 @@ private fun CamScreen(
                         .align(Alignment.Center)
                         .background(Color.White)
                         .fillMaxWidth(0.6f)
-                        .padding(30.dp)
-                        .rotate(180f),
+                        .padding(30.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text("오류 발생", color = Color.Red)
@@ -227,16 +226,16 @@ private fun CamScreen(
         }
 
         IconButton(
-            onClick = { onBackPressed() },
+            onClick = { onRefreshPressed() },
+            enabled = isEnabledRefresh,
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(bottom = 10.dp, end = 10.dp)
-                .rotate(180f)
+                .align(Alignment.TopEnd)
+                .padding(top = 10.dp, end = 10.dp)
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.arrow_back),
+                painter = painterResource(id = R.drawable.refresh),
                 contentDescription = "뒤로 가기",
-                tint = Color.White
+                tint = if(isEnabledRefresh) Color.White else Color.White.copy(0.5f)
             )
         }
 
@@ -246,23 +245,20 @@ private fun CamScreen(
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 20.dp)
-                .rotate(180f)
+                .align(Alignment.TopCenter)
+                .padding(top = 20.dp)
         )
 
         IconButton(
-            onClick = { onRefreshPressed() },
-            enabled = isEnabledRefresh,
+            onClick = { onBackPressed() },
             modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(bottom = 10.dp, start = 10.dp)
-                .rotate(180f)
+                .align(Alignment.TopStart)
+                .padding(top = 10.dp, start = 10.dp)
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.refresh),
+                painter = painterResource(id = R.drawable.arrow_back),
                 contentDescription = "뒤로 가기",
-                tint = if(isEnabledRefresh) Color.White else Color.White.copy(0.5f)
+                tint = Color.White
             )
         }
     }
