@@ -1,9 +1,7 @@
 package com.example.patientManageApp.presentation.screen.webCamPage
 
 import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.BackHandler
-import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,12 +36,10 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
-import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.rtsp.RtspMediaSource
-import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.example.patientManageApp.R
@@ -167,7 +163,7 @@ private fun CamScreen(
     onRefreshPressed: () -> Unit
 ) {
     val isEnabledRefresh by remember(playerState) {
-        mutableStateOf(playerState == PlayerState.ERROR)
+        mutableStateOf(playerState != PlayerState.BUFFERING)
     }
 
     Box(
@@ -270,14 +266,6 @@ private fun CamScreen(
             )
         }
     }
-}
-
-@OptIn(UnstableApi::class)
-private fun createMediaSource(rtspUrl: String): MediaSource {
-    return RtspMediaSource.Factory()
-        .setForceUseRtpTcp(true)
-        .setDebugLoggingEnabled(true)
-        .createMediaSource(MediaItem.fromUri(Uri.parse(rtspUrl)))
 }
 
 @Preview(showBackground = true)
