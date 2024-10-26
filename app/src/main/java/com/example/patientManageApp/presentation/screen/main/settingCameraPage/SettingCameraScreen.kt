@@ -204,6 +204,9 @@ private fun SettingCameraScreen(
             rtspAddress = it
         }
 
+        WarningText()
+
+
         BackGroundField(backGroundImg) {
             backGroundImg = getBackGroundImage(it)
         }
@@ -304,6 +307,18 @@ private fun RtspAddressField(rtspAddress: String, onRtspAddressChange: (String) 
             singleLine = true
         )
     }
+}
+
+@Composable
+private fun WarningText() {
+    Text(text = "* 외부 네트워크를 이용 할 경우, 사용하고 있는 카메라 앱이 제공하는 " +
+            "RTSP 주소에서 IP를 공인 IP로 변경하여 적어 주세요. " +
+            "이를 위해서는 카메라의 네트워크 공유기의 포트 포워딩이 필요할 수 있습니다." +
+            "\n\n* RTSP 주소를 입력할 경우, 사용하고 있는 카메라 앱에서 제공하는 " +
+            "ID 및 PW를 확인하고 아래와 같은 형식으로 적어주세요." +
+            "\n형식: rtsp://ID:PW@IP:포트/경로", fontSize = 12.sp,
+        color = Color.Gray,
+        modifier = Modifier.padding(start = 25.dp, top = 5.dp, end = 25.dp))
 }
 
 @Composable
