@@ -164,16 +164,16 @@ private fun AnalysisScreen(
         if (maxOccurrenceMap.isNotEmpty()) {
             SetAnalysisScreenInfo(
                 R.drawable.clock_loader_90,
-                "최다 이상 행동 횟수: ${maxOccurrenceMap.keys.joinToString(", ")}",
-                "${maxOccurrenceMap.values.max()}회"
+                "최다 이상 행동 횟수",
+                "${maxOccurrenceMap.keys.joinToString(", ")}: ${maxOccurrenceMap.values.max()}회"
             )
         }
 
         if (minOccurrenceMap.isNotEmpty() && maxOccurrenceMap.values.max() != minOccurrenceMap.values.min()) {
             SetAnalysisScreenInfo(
                 R.drawable.clock_loader_10,
-                "최소 이상 행동 횟수: ${minOccurrenceMap.keys.joinToString(", ")}",
-                "${minOccurrenceMap.values.min()}회"
+                "최소 이상 행동 횟수",
+                "${minOccurrenceMap.keys.joinToString(", ")}: ${minOccurrenceMap.values.min()}회"
             )
         }
     }
