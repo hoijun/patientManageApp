@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -325,8 +326,8 @@ private fun WarningText() {
 private fun BackGroundField(backGroundImg: String, clickBackGroundImg: (selectedImg: Int) -> Unit) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
-    val imageSize = (screenWidth - 70.dp) / 2
-    Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp))
+    val imageSize = (screenWidth - 70.dp) / 4
+    Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp))
     {
         Text(text = "배경 이미지 선택",
             fontSize = 15.sp,
@@ -346,14 +347,6 @@ private fun BackGroundField(backGroundImg: String, clickBackGroundImg: (selected
                 isSelected = getBackGroundImage(R.drawable.bed_room) == backGroundImg,
                 size = imageSize
             ) { clickBackGroundImg(it) }
-        }
-
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .padding(top = 20.dp)
-                .fillMaxWidth()
-        ) {
             BackGroundImage(
                 resourceId = R.drawable.my_room,
                 isSelected = getBackGroundImage(R.drawable.my_room) == backGroundImg,
@@ -381,7 +374,7 @@ private fun BackGroundImage(
         modifier = Modifier
             .clip(RoundedCornerShape(15.dp))
             .border(
-                5.dp,
+                3.dp,
                 Color(0xFFc0c2c4),
                 RoundedCornerShape(15.dp)
             )
