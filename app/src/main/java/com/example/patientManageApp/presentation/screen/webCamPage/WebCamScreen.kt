@@ -49,7 +49,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(UnstableApi::class)
 @Composable
-fun WebCamScreen(rtspUrl: String, onBackPressed: () -> Unit) {
+fun WebCamScreen(rtspUrl: String, cameraName: String, onBackPressed: () -> Unit) {
     BackHandler(true) {
         onBackPressed()
     }
@@ -141,6 +141,7 @@ fun WebCamScreen(rtspUrl: String, onBackPressed: () -> Unit) {
         exoPlayer,
         errorMessage,
         isFirstFrameRendered,
+        cameraName,
         onBackPressed = { onBackPressed() },
         onRefreshPressed = { refresh = true }
     )
@@ -159,6 +160,7 @@ private fun CamScreen(
     exoPlayer: ExoPlayer?,
     errorMessage: String?,
     isFirstFrameRendered: Boolean,
+    cameraName: String,
     onBackPressed: () -> Unit,
     onRefreshPressed: () -> Unit
 ) {
@@ -240,7 +242,7 @@ private fun CamScreen(
         }
 
         Text(
-            text = "1번 카메라",
+            text = cameraName,
             color = Color.White,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
@@ -272,6 +274,7 @@ private fun WebCamPreview() {
         exoPlayer = null,
         errorMessage = "dkdkdk",
         isFirstFrameRendered = true,
+        cameraName = "주방 카메라",
         onBackPressed = { },
         onRefreshPressed = { }
     )
