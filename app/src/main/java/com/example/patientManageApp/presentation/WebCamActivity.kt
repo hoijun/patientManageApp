@@ -27,9 +27,10 @@ class WebCamActivity : ComponentActivity() {
         window.insetsController?.hide(WindowInsets.Type.navigationBars())
         window.insetsController?.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         val rtspUrl = intent.getStringExtra("rtspAddress") ?: ""
+        val cameraName = intent.getStringExtra("cameraName") ?: ""
         setContent {
             PatientManageAppTheme {
-                WebCamScreen(rtspUrl, onBackPressed)
+                WebCamScreen(rtspUrl, cameraName, onBackPressed)
             }
         }
     }
