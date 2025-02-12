@@ -6,7 +6,19 @@
 - 캘린더 기능을 통해 환자의 행동 인식에 대한 정보와 영상을 확인 가능
 - 그래프 기능을 통해 환자의 행동 인식에 대한 간단한 분석 제공
 
-## [간단한 소개 링크](https://infrequent-somersault-d99.notion.site/98c8de3ed8a24a44b858c10a79e3fe77?pvs=4)
+## 기술 스택
+- Firebase - 데이터 베이스 및 사용자 인증
+- Compose - UI 구현
+- ExoPlayer - Rtsp 기반의 영상 스트리밍 구현
+- Coroutine - 비동기 처리
+- Fcm - 이상행동 감지 알람 구현
+
+## 인원
+- 안드로이드 개발자 1명
+- AI 담당 개발 3명
+
+##기간
+2024-07-01 ~ 2024-11-14
 
 ## 개발 언어 
    <img src="https://img.shields.io/badge/kotlin-7F52FF?style=flat&logo=kotlin&logoColor=white"/>	
