@@ -17,8 +17,8 @@
 - 안드로이드 개발자 1명
 - AI 담당 개발 3명
 
-##기간
-2024-07-01 ~ 2024-11-14
+## 기간
+2024-07 ~ 2024-10
 
 ## 개발 언어 
    <img src="https://img.shields.io/badge/kotlin-7F52FF?style=flat&logo=kotlin&logoColor=white"/>	
