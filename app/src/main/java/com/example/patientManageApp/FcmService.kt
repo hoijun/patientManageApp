@@ -90,6 +90,7 @@ class FcmService : FirebaseMessagingService() {
             .setSmallIcon(R.drawable.warning)
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setAutoCancel(true)
 
         if (jpgBitmap != null) {
