@@ -1,19 +1,13 @@
 package com.example.patientManageApp.presentation.screen.login.loginPage
 
-import android.content.ContentValues.TAG
 import android.util.Log
-import androidx.activity.result.ActivityResult
 import androidx.credentials.CustomCredential
-import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.patientManageApp.domain.usecase.UseCases
 import com.example.patientManageApp.domain.utils.onError
 import com.example.patientManageApp.domain.utils.onSuccess
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.common.api.ApiException
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException

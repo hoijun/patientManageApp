@@ -5,32 +5,28 @@ import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import androidx.activity.compose.ManagedActivityResultLauncher
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -42,7 +38,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -51,22 +46,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
-import androidx.credentials.GetCustomCredentialOption
-import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.patientManageApp.BuildConfig
-import com.example.patientManageApp.presentation.MainActivity
 import com.example.patientManageApp.R
 import com.example.patientManageApp.presentation.BackOnPressed
 import com.example.patientManageApp.presentation.LoadingDialog
+import com.example.patientManageApp.presentation.MainActivity
 import com.example.patientManageApp.presentation.ScreenHeader
-import com.example.patientManageApp.presentation.noRippleClickable
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.model.ClientError
@@ -229,8 +218,35 @@ private fun SnsLoginButton(text: String, color: Color, icon: Painter, onClick: (
 
 @Composable
 private fun GoogleLoginButton(onClick: () -> Unit) {
+    var openGoogleLoginDialog by remember { mutableStateOf(false) }
+    if (openGoogleLoginDialog) {
+        AlertDialog(
+            onDismissRequest = { openGoogleLoginDialog = false },
+            title = { Text("안내") },
+            text = { Text("구글 계정이 존재 하지 않거나, 5개 이상 등록 되어 있을 경우 로그인이 불가능 합니다.") },
+            containerColor = Color(0xFFE2E2E2),
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        openGoogleLoginDialog = false
+                        onClick()  // 확인 버튼 클릭시 원래의 onClick 실행
+                    }
+                ) {
+                    Text("확인", color = Color.Black)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { openGoogleLoginDialog = false }
+                ) {
+                    Text("취소", color = Color.Black)
+                }
+            }
+        )
+    }
+
     Button(
-        onClick = { onClick() },
+        onClick = { openGoogleLoginDialog = true },
         colors = ButtonDefaults.buttonColors(Color(0xff4285F4)),
         shape = RoundedCornerShape(5.dp),
         modifier = Modifier
@@ -267,7 +283,6 @@ private fun GoogleLoginButton(onClick: () -> Unit) {
 
 private fun kakaoLogin(context: Context, viewModel: LoginViewModel) {
     viewModel.isLoading()
-
     val kakaoLoginCallback: (OAuthToken?, Throwable?) -> Unit = { token, error ->
         if (error != null) {
             viewModel.loginFail()
@@ -312,6 +327,7 @@ private fun naverLogin(context: Context, viewModel: LoginViewModel) {
 
 private fun googleLogin(context: Context, coroutineScope: CoroutineScope, viewModel: LoginViewModel) {
     viewModel.isLoading()
+
     val credentialManager = CredentialManager.create(context)
     val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
         .setFilterByAuthorizedAccounts(false)
@@ -328,6 +344,7 @@ private fun googleLogin(context: Context, coroutineScope: CoroutineScope, viewMo
                 request = request,
                 context = context
             )
+
             viewModel.googleSignIn(result)
         } catch (e: GetCredentialException) {
             viewModel.loginFail()
