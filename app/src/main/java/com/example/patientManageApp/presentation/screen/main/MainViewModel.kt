@@ -11,13 +11,18 @@ import com.example.patientManageApp.domain.entity.PatientEntity
 import com.example.patientManageApp.domain.entity.UserEntity
 import com.example.patientManageApp.domain.usecase.UseCases
 import com.example.patientManageApp.domain.utils.getResult
+import com.patrykandpatrick.vico.core.entry.ChartEntry
+import com.patrykandpatrick.vico.core.entry.entryOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.YearMonth
 import javax.inject.Inject
+import kotlin.math.ceil
 
 @HiltViewModel
 class MainViewModel@Inject constructor(private val useCases: UseCases): ViewModel() {
@@ -92,6 +97,9 @@ class MainViewModel@Inject constructor(private val useCases: UseCases): ViewMode
             } else {
                 isSuccess()
             }
+
+            setOccurrencesGroupedByMonth()
+            setOccurrencesGroupedByWeekOfMonth()
         }
     }
 
@@ -105,6 +113,80 @@ class MainViewModel@Inject constructor(private val useCases: UseCases): ViewMode
 
     fun updateCameraData(cameraEntities: List<CameraEntity>) {
         _cameraData.value = cameraEntities
+    }
+
+    private var occurrencesGroupedByMonth: Map<String, List<Map.Entry<String, List<OccurrencesEntity>>>> = mapOf()
+    private var occurrencesGroupedByWeekOfMonth: Map<String, List<Map.Entry<String, List<OccurrencesEntity>>>> = mapOf()
+
+    private fun setOccurrencesGroupedByMonth() {
+        occurrencesGroupedByMonth = occurrenceData.entries.groupBy {
+            val date = LocalDate.parse(it.key)
+            "${date.year}-${date.monthValue.toString().padStart(2, '0')}"
+        }
+    }
+
+    private fun setOccurrencesGroupedByWeekOfMonth() {
+        occurrencesGroupedByWeekOfMonth = occurrenceData.entries.groupBy {
+            val date = LocalDate.parse(it.key)
+            val weekOfMonth = ceil(date.dayOfMonth.toDouble() / 7).toInt()
+            "${date.year}-${date.monthValue.toString().padStart(2, '0')}-$weekOfMonth"
+        }
+    }
+
+    fun getMonthlyOccurrenceCount(month: YearMonth): Int {
+        val groupByMonth = occurrencesGroupedByMonth
+        return getOccurrenceCount(groupByMonth[month.toString()] ?: emptyList())
+    }
+
+    private fun getOccurrenceCount(occurrenceList: List<Map.Entry<String, List<OccurrencesEntity>>>): Int {
+        var count = 0
+        occurrenceList.forEach {
+            count += it.value.size
+        }
+        return count
+    }
+
+    fun getMaxAndMinOccurrencesForMonth(month: YearMonth): Pair<Map<String, Int>, Map<String, Int>> {
+        val groupByMonth = occurrencesGroupedByMonth
+        return getMaxAndMinOccurrenceCount(groupByMonth[month.toString()] ?: emptyList())
+    }
+
+    private fun getMaxAndMinOccurrenceCount(occurrenceList: List<Map.Entry<String, List<OccurrencesEntity>>>): Pair<Map<String, Int>, Map<String, Int>> {
+        val occurrenceMap = hashMapOf<String, Int>()
+        occurrenceList.forEach {
+            it.value.forEach { occurrence ->
+                if (!occurrenceMap.containsKey(occurrence.kind)) {
+                    occurrenceMap[occurrence.kind] = 0
+                }
+                occurrenceMap[occurrence.kind] = (occurrenceMap[occurrence.kind])!! + 1
+            }
+        }
+
+        if (occurrenceMap.isNotEmpty()) {
+            val minValue = occurrenceMap.values.min()
+            val maxValue = occurrenceMap.values.max()
+
+            val maxEntries = occurrenceMap.filter { it.value == maxValue }
+            val minEntries = occurrenceMap.filter { it.value == minValue }
+
+            return Pair(maxEntries, minEntries)
+        } else {
+            return Pair(mapOf(), mapOf())
+        }
+    }
+
+    fun getWeeklyChartEntries(month: YearMonth): List<ChartEntry> {
+        val groupByWeekOfMonth = occurrencesGroupedByWeekOfMonth
+
+        return (1..5).map { week ->
+            val weekKey = "$month-$week"
+            val occurrenceCount = getOccurrenceCount(groupByWeekOfMonth[weekKey] ?: emptyList())
+
+            entryOf(
+                x = (week - 1).toFloat(),
+                y = occurrenceCount.toFloat()
+            )
+        }
     }
 
     private fun isLoading() {
