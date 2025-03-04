@@ -4,8 +4,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -20,7 +18,6 @@ import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -59,6 +56,7 @@ import com.patrykandpatrick.vico.core.axis.AxisItemPlacer
 import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
 import com.patrykandpatrick.vico.core.component.shape.Shapes
 import com.patrykandpatrick.vico.core.component.text.TextComponent
+import com.patrykandpatrick.vico.core.entry.ChartEntry
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.entryOf
 import java.time.LocalDate
@@ -82,18 +80,11 @@ fun AnalysisScreen(mainViewModel: MainViewModel) {
     var currentMonth by remember { mutableStateOf(LocalDate.now().yearMonth) }
     val previousMonth by remember(currentMonth) { mutableStateOf(currentMonth.minusMonths(1)) }
 
-    val occurrenceDays = mainViewModel.occurrenceData
+    val currentMonthOccurrenceCount = mainViewModel.getMonthlyOccurrenceCount(currentMonth)
+    val previousMonthOccurrenceCount = mainViewModel.getMonthlyOccurrenceCount(previousMonth)
+    val (maxOccurrenceMap, minOccurrenceMap) = mainViewModel.getMaxAndMinOccurrencesForMonth(currentMonth)
+    val weeklyChartEntriesOfCurrentMonth = mainViewModel.getWeeklyChartEntries(currentMonth)
 
-    val groupByMonth = occurrenceDays.entries.groupBy {
-        val date = LocalDate.parse(it.key)
-        "${date.year}-${date.monthValue.toString().padStart(2, '0')}"
-    }
-
-    val groupByWeekOfMonth = occurrenceDays.entries.groupBy {
-        val date = LocalDate.parse(it.key)
-        val weekOfMonth = ceil(date.dayOfMonth.toDouble() / 7).toInt()
-        "${date.year}-${date.monthValue.toString().padStart(2, '0')}-$weekOfMonth"
-    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -101,15 +92,11 @@ fun AnalysisScreen(mainViewModel: MainViewModel) {
     ) {
         AnalysisScreen(
             currentMonth = currentMonth,
-            currentMonthOccurrenceCount = getOccurrenceCount(
-                groupByMonth[currentMonth.toString()] ?: emptyList()
-            ),
-            previousMonthOccurrenceCount = getOccurrenceCount(
-                groupByMonth[previousMonth.toString()] ?: emptyList()
-            ),
-            groupByWeekOfMonth = groupByWeekOfMonth,
-            maxOccurrenceMap = getMaxAndMinOccurrenceCount(groupByMonth[currentMonth.toString()] ?: emptyList()).first,
-            minOccurrenceMap = getMaxAndMinOccurrenceCount(groupByMonth[currentMonth.toString()] ?: emptyList()).second,
+            currentMonthOccurrenceCount = currentMonthOccurrenceCount,
+            previousMonthOccurrenceCount = previousMonthOccurrenceCount,
+            maxOccurrenceMap = maxOccurrenceMap,
+            minOccurrenceMap = minOccurrenceMap,
+            weeklyChartEntriesOfCurrentMonth = weeklyChartEntriesOfCurrentMonth,
             onLeftClick = {
                 currentMonth = currentMonth.previousMonth
             },
@@ -133,11 +120,11 @@ private fun AnalysisScreen(
     currentMonth: YearMonth,
     currentMonthOccurrenceCount: Int,
     previousMonthOccurrenceCount: Int,
-    groupByWeekOfMonth: Map<String, List<MutableMap.MutableEntry<String, List<OccurrencesEntity>>>>,
     maxOccurrenceMap: Map<String, Int>,
     minOccurrenceMap: Map<String, Int>,
+    weeklyChartEntriesOfCurrentMonth: List<ChartEntry>,
     onLeftClick: () -> Unit,
-    onRightClick: () -> Unit
+    onRightClick: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()
         .verticalScroll(rememberScrollState())) {
@@ -147,7 +134,7 @@ private fun AnalysisScreen(
             onLeftClick = { onLeftClick() },
             onRightClick = { onRightClick() })
 
-        AnalysisChart(groupByWeekOfMonth = groupByWeekOfMonth, month = currentMonth)
+        AnalysisChart(weeklyChartEntriesOfCurrentMonth = weeklyChartEntriesOfCurrentMonth)
         UnitField()
         CustomDivider(horizontal = 0.dp, vertical = 15.dp)
         SetAnalysisScreenInfo(
@@ -180,24 +167,12 @@ private fun AnalysisScreen(
 }
 
 @Composable
-private fun AnalysisChart(
-    groupByWeekOfMonth: Map<String, List<MutableMap.MutableEntry<String, List<OccurrencesEntity>>>>,
-    month: YearMonth
-) {
+private fun AnalysisChart(weeklyChartEntriesOfCurrentMonth: List<ChartEntry>) {
     val chartEntryModelProducer = remember {
         ChartEntryModelProducer()
     }
 
-    LaunchedEffect(month) {
-        val entries = (1..5).map { week ->
-            entryOf(
-                x = (week - 1).toFloat(),
-                y = getOccurrenceCount(groupByWeekOfMonth["$month-$week"] ?: emptyList()).toFloat()
-            )
-        }
-        chartEntryModelProducer.setEntries(entries)
-    }
-
+    chartEntryModelProducer.setEntries(weeklyChartEntriesOfCurrentMonth)
     Chart(
         modifier = Modifier
             .padding(horizontal = 20.dp, vertical = 5.dp)
@@ -288,39 +263,6 @@ private fun SetAnalysisScreenInfo(icon: Int, count: String, increment: String) {
     }
 }
 
-private fun getOccurrenceCount(occurrenceList: List<MutableMap.MutableEntry<String, List<OccurrencesEntity>>>): Int {
-    var count = 0
-    occurrenceList.forEach {
-        count += it.value.size
-    }
-    return count
-}
-
-private fun getMaxAndMinOccurrenceCount(occurrenceList: List<MutableMap.MutableEntry<String, List<OccurrencesEntity>>>): Pair<Map<String, Int>, Map<String, Int>> {
-    val occurrenceMap = hashMapOf<String, Int>()
-    occurrenceList.forEach {
-        it.value.forEach { occurrence ->
-            if (!occurrenceMap.containsKey(occurrence.kind)) {
-                occurrenceMap[occurrence.kind] = 0
-            }
-            occurrenceMap[occurrence.kind] = (occurrenceMap[occurrence.kind])!! + 1
-        }
-    }
-
-    if (occurrenceMap.isNotEmpty()) {
-        val minValue = occurrenceMap.values.min()
-        val maxValue = occurrenceMap.values.max()
-
-        val maxEntries = occurrenceMap.filter { it.value == maxValue }
-        val minEntries = occurrenceMap.filter { it.value == minValue }
-
-        return Pair(maxEntries, minEntries)
-    } else {
-        return Pair(mapOf(), mapOf())
-    }
-}
-
-
 @Preview(showBackground = true)
 @Composable
 private fun AnalysisScreenPreview() {
@@ -354,6 +296,52 @@ private fun AnalysisScreenPreview() {
     var currentMonth by remember { mutableStateOf(LocalDate.now().yearMonth) }
     val previousMonth by remember(currentMonth) { mutableStateOf(currentMonth.minusMonths(1)) }
 
+    fun getOccurrenceCount(occurrenceList: List<MutableMap.MutableEntry<String, List<OccurrencesEntity>>>): Int {
+        var count = 0
+        occurrenceList.forEach {
+            count += it.value.size
+        }
+        return count
+    }
+
+    fun getMaxAndMinOccurrenceCount(occurrenceList: List<MutableMap.MutableEntry<String, List<OccurrencesEntity>>>): Pair<Map<String, Int>, Map<String, Int>> {
+        val occurrenceMap = hashMapOf<String, Int>()
+        occurrenceList.forEach {
+            it.value.forEach { occurrence ->
+                if (!occurrenceMap.containsKey(occurrence.kind)) {
+                    occurrenceMap[occurrence.kind] = 0
+                }
+                occurrenceMap[occurrence.kind] = (occurrenceMap[occurrence.kind])!! + 1
+            }
+        }
+
+        if (occurrenceMap.isNotEmpty()) {
+            val minValue = occurrenceMap.values.min()
+            val maxValue = occurrenceMap.values.max()
+
+            val maxEntries = occurrenceMap.filter { it.value == maxValue }
+            val minEntries = occurrenceMap.filter { it.value == minValue }
+
+            return Pair(maxEntries, minEntries)
+        } else {
+            return Pair(mapOf(), mapOf())
+        }
+    }
+
+    fun getWeeklyChartEntries(month: YearMonth): List<ChartEntry> {
+        val groupByWeekOfMonth = groupByWeekOfMonth
+
+        return (1..5).map { week ->
+            val weekKey = "$month-$week"
+            val occurrenceCount = getOccurrenceCount(groupByWeekOfMonth[weekKey] ?: emptyList())
+
+            entryOf(
+                x = (week - 1).toFloat(),
+                y = occurrenceCount.toFloat()
+            )
+        }
+    }
+
     AnalysisScreen(
         currentMonth = currentMonth,
         currentMonthOccurrenceCount = getOccurrenceCount(
@@ -362,9 +350,9 @@ private fun AnalysisScreenPreview() {
         previousMonthOccurrenceCount = getOccurrenceCount(
             groupByMonth[previousMonth.toString()] ?: emptyList()
         ),
-        groupByWeekOfMonth = groupByWeekOfMonth,
         maxOccurrenceMap = getMaxAndMinOccurrenceCount(groupByMonth[currentMonth.toString()] ?: emptyList()).first,
         minOccurrenceMap = getMaxAndMinOccurrenceCount(groupByMonth[currentMonth.toString()] ?: emptyList()).second,
+        weeklyChartEntriesOfCurrentMonth = getWeeklyChartEntries(currentMonth),
         onLeftClick = {
             currentMonth = currentMonth.previousMonth
         },
@@ -373,3 +361,4 @@ private fun AnalysisScreenPreview() {
         }
     )
 }
+
