@@ -2,9 +2,9 @@
  [![Kotlin](https://img.shields.io/badge/kotlin-7F52FF?style=flat&logo=kotlin&logoColor=white)](https://kotlinlang.org/)
  [![Android](https://img.shields.io/badge/platform-Android-green.svg)](https://developer.android.com)
  [![API](https://img.shields.io/badge/API-34%2B-brightgreen.svg)](https://android-arsenal.com/api?level=34)
-  
+## 프로젝트 소개  
 카메라 촬영과 AI를 통한 환자 행동 인식 정보를 확인할 수 있고, RTSP 카메라의 실시간 영상을 스트리밍할 수 있는 시니어 위험 행동 감지 전용 Android 애플리케이션입니다.
-
+<br><br/>
 ## ✨ 주요 기능
 
 - **🏠 홈 화면**: 카메라 현황 대시보드
@@ -16,7 +16,7 @@
 - **📅 캘린더**: 월별 발생 상황 캘린더 뷰, 날짜별 상세 정보 조회, 환자의 행동 인식 정보와 영상 확인
 
 - **🚨 알림 기능**:  FCM을 통한 이상행동 감지 알람
-
+<br><br/>
 ## 🛠 기술 스택
 
 ### 개발 환경
@@ -43,7 +43,7 @@
 - **구조**: 구조: Clean Architecture
 - **의존성 주입**: 의존성 주입: Dagger Hilt
 - **UI**: Jetpack Compose
-
+<br><br/>
 ## 🚀 시작하기
 
 ### 요구사항
@@ -60,7 +60,7 @@
 - naverLogin_Client_Id="YOUR_NAVER_CLIENT_ID"
 - naverLogin_Client_Secret="YOUR_NAVER_CLIENT_SECRET"
 - googleLogin_WebClient_Id="YOUR_GOOGLE_WEB_CLIENT_ID"
-
+<br><br/>
 ## 📊 프로젝트 정보
 
 - 개발 기간: 2024년 7월 ~ 2024년 10월
